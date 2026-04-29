@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tom's Sandpit — Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Karla:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #f7f4ef;
+    --ink: #1a1814;
+    --mid: #6b6660;
+    --light: #c8c3bc;
+    --accent: #8b4a2f;
+    --white: #ffffff;
+    --panel: #f0ece5;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'Karla', system-ui, sans-serif;
+  }
+
+  html { font-size: 16px; scroll-behavior: smooth; }
+  body { background: var(--cream); color: var(--ink); font-family: var(--sans); font-weight: 300; min-height: 100vh; }
+
+  .shell { display: grid; grid-template-columns: 220px 1fr; grid-template-rows: auto 1fr; min-height: 100vh; }
+
+  header {
+    grid-column: 1 / -1; border-bottom: 1px solid var(--light); padding: 1.5rem 2rem;
+    display: flex; align-items: baseline; gap: 2rem; background: var(--cream);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo { font-family: var(--serif); font-size: 1.6rem; font-weight: 300; letter-spacing: 0.02em; color: var(--ink); white-space: nowrap; }
+  .logo em { font-style: italic; color: var(--accent); }
+
+  .header-tabs { display: flex; gap: 0; margin-left: auto; border: 1px solid var(--light); }
+  .tab-btn { padding: 0.5rem 1.2rem; background: none; border: none; border-right: 1px solid var(--light); font-family: var(--sans); font-size: 0.75rem; font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mid); cursor: pointer; transition: background 0.15s, color 0.15s; }
+  .tab-btn:last-child { border-right: none; }
+  .tab-btn.active { background: var(--ink); color: var(--white); }
+  .tab-btn:hover:not(.active) { background: var(--panel); color: var(--ink); }
+
+  aside { border-right: 1px solid var(--light); padding: 2rem 1.5rem; display: flex; flex-direction: column; gap: 2rem; background: var(--cream); }
+  .sidebar-section h3 { font-family: var(--sans); font-size: 0.65rem; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: var(--light); margin-bottom: 0.8rem; }
+  .sidebar-list { list-style: none; display: flex; flex-direction: column; gap: 0.2rem; }
+  .sidebar-list li button { display: block; width: 100%; text-align: left; padding: 0.4rem 0.7rem; font-family: var(--sans); font-size: 0.82rem; font-weight: 300; color: var(--mid); background: none; border: none; cursor: pointer; border-radius: 2px; transition: background 0.12s, color 0.12s; }
+  .sidebar-list li button:hover, .sidebar-list li button.active { background: var(--panel); color: var(--ink); }
+  .add-btn { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.7rem; font-family: var(--sans); font-size: 0.78rem; font-weight: 400; letter-spacing: 0.05em; color: var(--accent); background: none; border: 1px dashed var(--accent); cursor: pointer; border-radius: 2px; width: 100%; margin-top: 0.4rem; transition: background 0.12s; }
+  .add-btn:hover { background: rgba(139,74,47,0.05); }
+
+  main { padding: 2.5rem 3rem; overflow-y: auto; }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .page-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--light); }
+  .page-header h1 { font-family: var(--serif); font-size: 2.8rem; font-weight: 300; line-height: 1; letter-spacing: -0.01em; }
+  .page-header h1 small { display: block; font-family: var(--sans); font-size: 0.72rem; font-weight: 400; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mid); margin-bottom: 0.4rem; }
+  .page-actions { display: flex; gap: 0.7rem; align-items: center; }
+
+  .btn { padding: 0.55rem 1.2rem; font-family: var(--sans); font-size: 0.75rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; border: 1px solid var(--ink); background: none; color: var(--ink); cursor: pointer; border-radius: 2px; transition: background 0.15s, color 0.15s; }
+  .btn:hover { background: var(--ink); color: var(--white); }
+  .btn.primary { background: var(--ink); color: var(--white); }
+  .btn.primary:hover { background: var(--accent); border-color: var(--accent); }
+  .btn.accent { background: var(--accent); color: var(--white); border-color: var(--accent); }
+  .btn.accent:hover { background: #7a3f27; border-color: #7a3f27; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .search-row { display: flex; gap: 1rem; margin-bottom: 2rem; align-items: center; }
+  .search-input { flex: 1; padding: 0.6rem 1rem; background: var(--white); border: 1px solid var(--light); font-family: var(--sans); font-size: 0.85rem; font-weight: 300; color: var(--ink); border-radius: 2px; outline: none; transition: border-color 0.15s; }
+  .search-input:focus { border-color: var(--ink); }
+  .search-input::placeholder { color: var(--light); }
+  select.filter-select { padding: 0.6rem 1rem; background: var(--white); border: 1px solid var(--light); font-family: var(--sans); font-size: 0.8rem; color: var(--mid); border-radius: 2px; outline: none; cursor: pointer; }
+
+  .works-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; }
+  .work-card { background: var(--white); border: 1px solid var(--panel); cursor: pointer; transition: box-shadow 0.2s, transform 0.2s; overflow: hidden; }
+  .work-card:hover { box-shadow: 0 8px 32px rgba(26,24,20,0.1); transform: translateY(-2px); }
+  .work-thumb { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: var(--panel); }
+  .work-info { padding: 1rem 1.1rem 1.2rem; }
+  .work-title { font-family: var(--serif); font-size: 1.05rem; font-weight: 400; font-style: italic; margin-bottom: 0.3rem; }
+  .work-meta { font-size: 0.72rem; font-weight: 300; color: var(--mid); letter-spacing: 0.03em; }
+  .work-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.7rem; }
+  .tag { padding: 0.2rem 0.5rem; background: var(--panel); font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mid); border-radius: 1px; }
+
+  .timeline-view { max-width: 700px; }
+  .timeline-year { display: grid; grid-template-columns: 60px 1fr; gap: 2rem; margin-bottom: 2.5rem; }
+  .timeline-year-label { font-family: var(--serif); font-size: 2rem; font-weight: 300; color: var(--light); padding-top: 0.2rem; text-align: right; }
+  .timeline-works { display: flex; flex-direction: column; gap: 1rem; }
+  .timeline-item { display: flex; gap: 1rem; padding: 1rem; background: var(--white); border: 1px solid var(--panel); cursor: pointer; transition: border-color 0.15s; }
+  .timeline-item:hover { border-color: var(--ink); }
+  .timeline-text h4 { font-family: var(--serif); font-size: 1rem; font-style: italic; font-weight: 400; margin-bottom: 0.2rem; }
+  .timeline-text p { font-size: 0.78rem; color: var(--mid); }
+
+  .detail-overlay { display: none; position: fixed; inset: 0; background: rgba(26,24,20,0.5); z-index: 200; align-items: center; justify-content: center; padding: 2rem; }
+  .detail-overlay.open { display: flex; }
+  .detail-panel { background: var(--cream); width: 100%; max-width: 900px; max-height: 90vh; overflow-y: auto; display: grid; grid-template-columns: 1fr 320px; }
+  .detail-media { background: var(--ink); display: flex; align-items: center; justify-content: center; min-height: 400px; position: relative; }
+  .detail-media img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .detail-info { padding: 2.5rem 2rem; display: flex; flex-direction: column; gap: 1.5rem; }
+  .detail-title { font-family: var(--serif); font-size: 2rem; font-weight: 300; font-style: italic; line-height: 1.1; }
+  .detail-fields { display: flex; flex-direction: column; gap: 0.8rem; }
+  .detail-field label { display: block; font-size: 0.65rem; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: var(--light); margin-bottom: 0.2rem; }
+  .detail-field p { font-size: 0.85rem; color: var(--ink); }
+  .detail-close { position: absolute; top: 1rem; right: 1rem; background: rgba(255,255,255,0.15); border: none; color: var(--white); width: 32px; height: 32px; font-size: 1rem; cursor: pointer; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+  .detail-close:hover { background: rgba(255,255,255,0.3); }
+
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(26,24,20,0.5); z-index: 300; align-items: center; justify-content: center; padding: 2rem; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--cream); width: 100%; max-width: 680px; max-height: 90vh; overflow-y: auto; padding: 2.5rem; }
+  .modal h2 { font-family: var(--serif); font-size: 1.8rem; font-weight: 300; font-style: italic; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--light); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  .form-full { grid-column: 1 / -1; }
+  .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+  .form-group label { font-size: 0.65rem; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mid); }
+  .form-group input, .form-group textarea, .form-group select { padding: 0.6rem 0.8rem; background: var(--white); border: 1px solid var(--light); font-family: var(--sans); font-size: 0.85rem; font-weight: 300; color: var(--ink); border-radius: 2px; outline: none; transition: border-color 0.15s; }
+  .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--ink); }
+  .form-group textarea { resize: vertical; min-height: 80px; }
+  .upload-zone { border: 2px dashed var(--light); padding: 2rem; text-align: center; cursor: pointer; border-radius: 2px; transition: border-color 0.15s, background 0.15s; }
+  .upload-zone:hover { border-color: var(--ink); background: rgba(26,24,20,0.02); }
+  .upload-zone p { font-size: 0.82rem; color: var(--mid); }
+  .upload-zone strong { display: block; font-size: 0.9rem; color: var(--ink); margin-bottom: 0.3rem; }
+  .upload-zone input[type="file"] { display: none; }
+  .upload-previews { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.7rem; }
+  .upload-preview { width: 70px; height: 70px; object-fit: cover; border: 1px solid var(--light); }
+  .form-actions { display: flex; justify-content: flex-end; gap: 0.7rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--light); }
+
+  .collections-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+  .collection-card { background: var(--white); border: 1px solid var(--panel); overflow: hidden; cursor: pointer; transition: box-shadow 0.2s; }
+  .collection-card:hover { box-shadow: 0 8px 32px rgba(26,24,20,0.1); }
+  .collection-strip { display: grid; grid-template-columns: repeat(3, 1fr); height: 100px; }
+  .collection-strip div { background: var(--panel); overflow: hidden; }
+  .collection-strip div img { width: 100%; height: 100%; object-fit: cover; }
+  .collection-meta { padding: 1.2rem; }
+  .collection-meta h3 { font-family: var(--serif); font-size: 1.2rem; font-style: italic; font-weight: 400; }
+  .collection-meta p { font-size: 0.75rem; color: var(--mid); margin-top: 0.3rem; }
+
+  .exhibitions-list { display: flex; flex-direction: column; gap: 1.2rem; max-width: 800px; }
+  .exhibition-card { background: var(--white); border: 1px solid var(--panel); padding: 1.5rem 2rem; display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: start; cursor: pointer; transition: border-color 0.15s; }
+  .exhibition-card:hover { border-color: var(--ink); }
+  .exhibition-card h3 { font-family: var(--serif); font-size: 1.3rem; font-style: italic; font-weight: 400; margin-bottom: 0.4rem; }
+  .exhibition-card p { font-size: 0.8rem; color: var(--mid); line-height: 1.6; }
+  .exhibition-date { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); white-space: nowrap; }
+
+  .bio-view { max-width: 640px; }
+  .bio-view .bio-text { font-family: var(--serif); font-size: 1.2rem; font-weight: 300; line-height: 1.75; color: var(--ink); margin-bottom: 2rem; }
+  .bio-view .bio-statement { font-family: var(--serif); font-size: 1rem; font-style: italic; line-height: 1.8; color: var(--mid); padding: 1.5rem 2rem; border-left: 2px solid var(--accent); margin-bottom: 2rem; }
+
+  .empty-state { text-align: center; padding: 5rem 2rem; color: var(--light); }
+  .empty-state .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+  .empty-state p { font-family: var(--serif); font-size: 1.1rem; font-style: italic; }
+
+  .stats-bar { display: flex; gap: 2.5rem; margin-bottom: 2.5rem; }
+  .stat { display: flex; flex-direction: column; gap: 0.2rem; }
+  .stat-num { font-family: var(--serif); font-size: 2rem; font-weight: 300; line-height: 1; }
+  .stat-label { font-size: 0.65rem; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mid); }
+
+  /* Admin/public */
+  .admin-only { display: none; }
+  body.admin .admin-only { display: block; }
+  body.admin .admin-flex { display: flex !important; }
+
+  /* Auth badge */
+  .mode-badge { font-size: 0.65rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.3rem 0.7rem; border-radius: 2px; background: var(--panel); color: var(--mid); border: 1px solid var(--light); cursor: pointer; transition: background 0.15s; }
+  .mode-badge.admin-mode { background: var(--accent); color: var(--white); border-color: var(--accent); }
+
+  /* Toast */
+  #toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--white); padding: 0.7rem 1.5rem; font-family: var(--sans); font-size: 0.8rem; letter-spacing: 0.05em; border-radius: 2px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999; white-space: nowrap; }
+  #toast.show { opacity: 1; }
+  #toast.error { background: #a63020; }
+
+  /* Loading spinner */
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 0.4rem; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Config warning banner */
+  #configBanner { background: #f5a623; color: #1a1814; padding: 0.6rem 2rem; font-family: var(--sans); font-size: 0.75rem; letter-spacing: 0.05em; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.1); }
+  #configBanner strong { font-weight: 500; }
+  #configBanner a { color: var(--ink); }
+
+  /* Mobile */
+  .mobile-menu-btn { display: none; background: none; border: 1px solid var(--light); color: var(--ink); width: 36px; height: 36px; font-size: 1.1rem; cursor: pointer; border-radius: 2px; align-items: center; justify-content: center; flex-shrink: 0; }
+  .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(26,24,20,0.4); z-index: 150; }
+  .sidebar-overlay.open { display: block; }
+
+  /* Print */
+  @media print {
+    body * { visibility: hidden !important; }
+    #printContactSheet, #printContactSheet * { visibility: visible !important; }
+    #printContactSheet { position: fixed; inset: 0; background: white; padding: 0; margin: 0; }
+  }
+  #printContactSheet { display: none; font-family: var(--sans); color: #1a1814; background: white; }
+  .print-header { padding: 2cm 2cm 1cm; border-bottom: 2px solid #1a1814; margin-bottom: 0; }
+  .print-header h1 { font-family: var(--serif); font-size: 22pt; font-weight: 300; font-style: italic; margin-bottom: 4pt; }
+  .print-header .print-meta { font-size: 9pt; color: #6b6660; letter-spacing: 0.08em; }
+  .print-works-grid { padding: 0.8cm 2cm; display: grid; grid-template-columns: 1fr 1fr; gap: 0.7cm; }
+  .print-work-item { display: grid; grid-template-columns: 90pt 1fr; gap: 10pt; page-break-inside: avoid; border: 0.5pt solid #c8c3bc; padding: 8pt; }
+  .print-work-thumb { width: 90pt; height: 68pt; object-fit: cover; background: #f0ece5; display: block; }
+  .print-work-info { padding: 2pt 0; }
+  .print-work-title { font-family: var(--serif); font-size: 10pt; font-style: italic; font-weight: 400; margin-bottom: 4pt; }
+  .print-work-meta { font-size: 7.5pt; color: #6b6660; line-height: 1.6; }
+  .print-work-notes { font-size: 7pt; color: #8b4a2f; font-style: italic; margin-top: 4pt; }
+
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    aside { position: fixed; top: 0; left: -280px; width: 260px; height: 100vh; overflow-y: auto; z-index: 160; padding: 5rem 1.5rem 2rem; transition: left 0.25s ease; box-shadow: 4px 0 24px rgba(26,24,20,0.12); }
+    aside.open { left: 0; }
+    .mobile-menu-btn { display: flex; }
+    .header-tabs { display: none; }
+    .mobile-nav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; background: var(--cream); border-top: 1px solid var(--light); z-index: 100; }
+    .mobile-nav .tab-btn { flex: 1; padding: 0.7rem 0.3rem; font-size: 0.6rem; border-right: 1px solid var(--light); display: flex; flex-direction: column; align-items: center; gap: 0.2rem; }
+    .mobile-nav .tab-btn:last-child { border-right: none; }
+    .mobile-nav .tab-btn .nav-icon { font-size: 1rem; line-height: 1; }
+    header { padding: 1rem 1.2rem; gap: 1rem; align-items: center; }
+    .logo { font-size: 1.3rem; }
+    main { padding: 1.5rem 1.2rem 5rem; }
+    .detail-panel { grid-template-columns: 1fr; }
+    .detail-media { min-height: 260px; }
+    .works-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    .page-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    .page-header h1 { font-size: 2.2rem; }
+  }
+  @media (max-width: 600px) {
+    .works-grid { grid-template-columns: 1fr; }
+    .collections-grid { grid-template-columns: 1fr; }
+    .exhibition-card { grid-template-columns: 1fr; }
+  }
+
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--light); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ── CONFIG WARNING BANNER (hidden once configured) ── -->
+<div id="configBanner" style="display:none;">
+  ⚠ <strong>Setup required:</strong> Replace the placeholder values for Supabase and Cloudinary in the CONFIG section at the top of the script before deploying.
+</div>
+
+<div class="shell">
+  <header>
+    <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+    <div class="logo">Tom's <em>Sandpit</em></div>
+    <nav class="header-tabs">
+      <button class="tab-btn active" data-view="works">Works</button>
+      <button class="tab-btn" data-view="collections">Collections</button>
+      <button class="tab-btn" data-view="exhibitions">Exhibitions</button>
+      <button class="tab-btn" data-view="timeline">Timeline</button>
+      <button class="tab-btn" data-view="bio">About</button>
+    </nav>
+    <button class="mode-badge admin-only" id="adminLogoutBtn" title="Sign out of admin">Sign out</button>
+    <button class="mode-badge" id="adminLoginBtn">Admin</button>
+  </header>
+
+  <aside>
+    <div class="sidebar-section">
+      <h3>Collections</h3>
+      <ul class="sidebar-list" id="sidebarCollections">
+        <li><button class="active" data-filter="all">All Works</button></li>
+      </ul>
+      <button class="add-btn admin-only" id="addCollectionBtn">+ New Collection</button>
+    </div>
+    <div class="sidebar-section">
+      <h3>Tags</h3>
+      <input type="text" id="tagSearch" placeholder="Filter tags…" style="width:100%;padding:0.35rem 0.6rem;background:var(--white);border:1px solid var(--light);font-family:var(--sans);font-size:0.75rem;color:var(--ink);border-radius:2px;outline:none;margin-bottom:0.5rem;">
+      <ul class="sidebar-list" id="sidebarTags"></ul>
+    </div>
+    <div class="sidebar-section">
+      <h3>Medium</h3>
+      <ul class="sidebar-list" id="sidebarMediums"></ul>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <nav class="mobile-nav" id="mobileNav" style="display:none;">
+    <button class="tab-btn active" data-view="works"><span class="nav-icon">◻</span>Works</button>
+    <button class="tab-btn" data-view="collections"><span class="nav-icon">⊞</span>Collections</button>
+    <button class="tab-btn" data-view="exhibitions"><span class="nav-icon">◈</span>Exhibitions</button>
+    <button class="tab-btn" data-view="timeline"><span class="nav-icon">↕</span>Timeline</button>
+    <button class="tab-btn" data-view="bio"><span class="nav-icon">◉</span>About</button>
+  </nav>
+
+  <main>
+    <!-- WORKS -->
+    <div class="view active" id="view-works">
+      <div class="page-header">
+        <h1><small>Portfolio</small>All Works</h1>
+        <div class="page-actions">
+          <button class="btn primary admin-only" id="addWorkBtn">+ Add Work</button>
+        </div>
+      </div>
+      <div class="stats-bar">
+        <div class="stat"><span class="stat-num" id="statWorks">—</span><span class="stat-label">Works</span></div>
+        <div class="stat"><span class="stat-num" id="statCollections">—</span><span class="stat-label">Collections</span></div>
+        <div class="stat"><span class="stat-num" id="statExhibitions">—</span><span class="stat-label">Exhibitions</span></div>
+      </div>
+      <div class="search-row">
+        <input class="search-input" type="text" id="searchWorks" placeholder="Search works…">
+        <select class="filter-select" id="filterYear"><option value="">All Years</option></select>
+        <select class="filter-select" id="filterMedium"><option value="">All Media</option></select>
+      </div>
+      <div class="works-grid" id="worksGrid"></div>
+    </div>
+
+    <!-- COLLECTIONS -->
+    <div class="view" id="view-collections">
+      <div class="page-header">
+        <h1><small>Browse</small>Collections</h1>
+        <div class="page-actions">
+          <button class="btn primary admin-only" id="addCollectionBtn2">+ New Collection</button>
+        </div>
+      </div>
+      <div class="collections-grid" id="collectionsGrid"></div>
+    </div>
+
+    <!-- EXHIBITIONS -->
+    <div class="view" id="view-exhibitions">
+      <div class="page-header">
+        <h1><small>History</small>Exhibitions</h1>
+        <div class="page-actions">
+          <button class="btn primary admin-only" id="addExhibitionBtn">+ New Exhibition</button>
+        </div>
+      </div>
+      <div class="exhibitions-list" id="exhibitionsList"></div>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="view" id="view-timeline">
+      <div class="page-header"><h1><small>Chronology</small>Timeline</h1></div>
+      <div class="timeline-view" id="timelineView"></div>
+    </div>
+
+    <!-- BIO -->
+    <div class="view" id="view-bio">
+      <div class="page-header">
+        <h1><small>Artist</small>About</h1>
+        <div class="page-actions">
+          <button class="btn admin-only" id="editBioBtn">Edit</button>
+        </div>
+      </div>
+      <div class="bio-view">
+        <p class="bio-text" id="bioText">Tom's sandpit — a personal testing space for deploying the portfolio tool. Use this to explore features, try things out, and break stuff safely before the real thing goes live for the artist.</p>
+        <blockquote class="bio-statement" id="bioStatement">"This is just a sandpit. Nothing here is precious. Click things, add things, delete things — that's the whole point."</blockquote>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- WORK DETAIL OVERLAY -->
+<div class="detail-overlay" id="detailOverlay">
+  <div class="detail-panel">
+    <div class="detail-media" id="detailMedia"></div>
+    <div class="detail-info">
+      <h2 class="detail-title" id="detailTitle"></h2>
+      <div class="detail-fields">
+        <div class="detail-field"><label>Year</label><p id="detailYear">—</p></div>
+        <div class="detail-field"><label>Medium</label><p id="detailMedium">—</p></div>
+        <div class="detail-field"><label>Dimensions</label><p id="detailDimensions">—</p></div>
+        <div class="detail-field"><label>Collection</label><p id="detailCollection">—</p></div>
+        <div class="detail-field"><label>Tags</label><p id="detailTags">—</p></div>
+        <div class="detail-field admin-only"><label>Private Notes</label><p id="detailNotes" style="color:var(--mid);font-style:italic;">—</p></div>
+      </div>
+      <div class="page-actions" style="margin-top:auto;padding-top:1rem;justify-content:flex-start;">
+        <button class="btn admin-only" id="editWorkBtn">Edit Work</button>
+        <button class="btn admin-only" style="color:var(--accent);border-color:var(--accent);" id="deleteWorkBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT WORK MODAL -->
+<div class="modal-overlay" id="workModal">
+  <div class="modal">
+    <h2 id="workModalTitle">Add New Work</h2>
+    <div class="form-grid">
+      <div class="form-group form-full"><label>Title *</label><input type="text" id="wTitle" placeholder="e.g. Untitled No. 7"></div>
+      <div class="form-group"><label>Year *</label><input type="number" id="wYear" placeholder="2024" min="1900" max="2099"></div>
+      <div class="form-group"><label>Medium</label><input type="text" id="wMedium" placeholder="e.g. Oil on linen"></div>
+      <div class="form-group"><label>Dimensions</label><input type="text" id="wDimensions" placeholder="e.g. 60 × 80 cm"></div>
+      <div class="form-group form-full">
+        <label>Collections <span style="font-weight:300;text-transform:none;letter-spacing:0;">(select one or more)</span></label>
+        <div id="wCollectionsList" style="background:var(--white);border:1px solid var(--light);max-height:120px;overflow-y:auto;padding:0.4rem 0;border-radius:2px;"></div>
+      </div>
+      <div class="form-group form-full"><label>Tags <span style="font-weight:300;text-transform:none;letter-spacing:0;">(comma separated)</span></label><input type="text" id="wTags" placeholder="e.g. abstraction, texture, large-scale"></div>
+      <div class="form-group form-full"><label>Private Notes</label><textarea id="wNotes" placeholder="Provenance, exhibition history, sale details…"></textarea></div>
+      <div class="form-group form-full">
+        <label>Image</label>
+        <label class="upload-zone" id="uploadZone">
+          <input type="file" id="wFile" accept="image/*">
+          <strong>Click to upload image</strong>
+          <p>Supports JPG, PNG, WebP — uploaded to Cloudinary</p>
+        </label>
+        <div class="upload-previews" id="uploadPreviews"></div>
+        <div id="uploadProgress" style="display:none;font-size:0.78rem;color:var(--mid);margin-top:0.4rem;"></div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" id="cancelWorkBtn">Cancel</button>
+      <button class="btn accent" id="saveWorkBtn">Save Work</button>
+    </div>
+  </div>
+</div>
+
+<!-- COLLECTION MODAL -->
+<div class="modal-overlay" id="collectionModal">
+  <div class="modal">
+    <h2>New Collection</h2>
+    <div class="form-grid">
+      <div class="form-group form-full"><label>Collection Name *</label><input type="text" id="cName" placeholder="e.g. Recent Works"></div>
+      <div class="form-group form-full"><label>Description</label><textarea id="cDesc" placeholder="A brief description…"></textarea></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" id="cancelCollectionBtn">Cancel</button>
+      <button class="btn accent" id="saveCollectionBtn">Create Collection</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXHIBITION DETAIL OVERLAY -->
+<div class="detail-overlay" id="exhibitionDetailOverlay">
+  <div class="detail-panel" style="grid-template-columns:1fr;max-width:700px;">
+    <div class="detail-info" style="padding:2.5rem;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:1.5rem;">
+        <div>
+          <h2 class="detail-title" id="exDetailTitle" style="margin-bottom:0.4rem;"></h2>
+          <p id="exDetailMeta" style="font-size:0.8rem;color:var(--mid);"></p>
+        </div>
+        <button class="detail-close" id="exDetailClose" style="position:static;background:var(--panel);color:var(--ink);flex-shrink:0;width:32px;height:32px;">✕</button>
+      </div>
+      <div id="exDetailWorks" style="display:flex;flex-direction:column;gap:0.7rem;max-height:55vh;overflow-y:auto;margin-bottom:1.5rem;"></div>
+      <div style="display:flex;gap:0.7rem;flex-wrap:wrap;border-top:1px solid var(--light);padding-top:1.2rem;">
+        <button class="btn" id="exDetailPrintBtn">⎙ Print Contact Sheet</button>
+        <button class="btn admin-only" id="exDetailEditBtn">Edit Exhibition</button>
+        <button class="btn admin-only" style="color:var(--accent);border-color:var(--accent);" id="exDetailDeleteBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EXHIBITION EDIT MODAL -->
+<div class="modal-overlay" id="exhibitionModal">
+  <div class="modal">
+    <h2 id="exhibitionModalTitle">New Exhibition</h2>
+    <div class="form-grid">
+      <div class="form-group form-full"><label>Exhibition Name *</label><input type="text" id="eName" placeholder="e.g. Between the Lines"></div>
+      <div class="form-group form-full"><label>Venue / Place</label><input type="text" id="ePlace" placeholder="e.g. The Model, Sligo"></div>
+      <div class="form-group"><label>Start Date</label><input type="date" id="eStart"></div>
+      <div class="form-group"><label>End Date</label><input type="date" id="eEnd"></div>
+      <div class="form-group form-full">
+        <label>Select Works</label>
+        <input class="search-input" type="text" id="eWorkSearch" placeholder="Search works to add…" style="margin-bottom:0.5rem;">
+        <div id="eWorksList" style="max-height:200px;overflow-y:auto;border:1px solid var(--light);background:var(--white);"></div>
+        <div id="eSelectedWorks" style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.5rem;"></div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" id="cancelExhibitionBtn">Cancel</button>
+      <button class="btn accent" id="saveExhibitionBtn">Save Exhibition</button>
+    </div>
+  </div>
+</div>
+
+<!-- BIO EDIT MODAL -->
+<div class="modal-overlay" id="bioModal">
+  <div class="modal">
+    <h2>Edit Bio & Statement</h2>
+    <div class="form-grid">
+      <div class="form-group form-full"><label>Artist Bio</label><textarea id="editBioText" style="min-height:120px;"></textarea></div>
+      <div class="form-group form-full"><label>Artist Statement</label><textarea id="editBioStatement" style="min-height:100px;"></textarea></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" id="cancelBioBtn">Cancel</button>
+      <button class="btn accent" id="saveBioBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN LOGIN MODAL -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal" style="max-width:400px;">
+    <h2>Admin Sign In</h2>
+    <div class="form-grid">
+      <div class="form-group form-full"><label>Email</label><input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email"></div>
+      <div class="form-group form-full"><label>Password</label><input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"></div>
+      <div id="loginError" class="form-full" style="display:none;font-size:0.8rem;color:#a63020;padding:0.4rem 0;"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" id="cancelLoginBtn">Cancel</button>
+      <button class="btn accent" id="doLoginBtn">Sign In</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="printContactSheet"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  ⚙  CONFIG — REPLACE THESE VALUES BEFORE DEPLOYING
+//  Instructions below each value
+// ══════════════════════════════════════════════════════════════
+
+const CONFIG = {
+  // ── SUPABASE ──────────────────────────────────────────────
+  // 1. Go to supabase.com → New project
+  // 2. Settings → API → copy "Project URL" here:
+  SUPABASE_URL: 'https://nwejiefiiulhhwrznbke.supabase.co',
+  // 3. Copy "anon public" key here:
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53ZWppZWZpaXVsaGh3cnpuYmtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0ODQ4NTMsImV4cCI6MjA5MzA2MDg1M30.jA2YJVmsBJR5crSfe9vqVmczs791iSWFb9fKY2vaBtU',
+
+  // ── CLOUDINARY ────────────────────────────────────────────
+  // 1. Go to cloudinary.com → Sign up free
+  // 2. Dashboard → copy "Cloud name" here:
+  CLOUDINARY_CLOUD_NAME: 'dgimf8yud',
+  // 3. Settings → Upload → Add upload preset → Mode: Unsigned → copy preset name here:
+  CLOUDINARY_UPLOAD_PRESET: 'toms-sandpit',
+};
+
+// ══════════════════════════════════════════════════════════════
+//  CONFIG CHECK
+// ══════════════════════════════════════════════════════════════
+
+const IS_CONFIGURED = !Object.values(CONFIG).some(v => v.startsWith('YOUR_'));
+
+if (!IS_CONFIGURED) {
+  document.getElementById('configBanner').style.display = 'block';
+  console.warn('Material Poetry: Replace placeholder CONFIG values before deploying.');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SUPABASE CLIENT (lightweight fetch-based, no SDK needed)
+// ══════════════════════════════════════════════════════════════
+
+const sb = {
+  headers: () => ({
+    'apikey': CONFIG.SUPABASE_ANON_KEY,
+    'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=representation'
+  }),
+  authHeaders: () => {
+    const token = sessionStorage.getItem('sb_token');
+    if (!token) return sb.headers();
+    return {
+      ...sb.headers(),
+      'Authorization': `Bearer ${token}`
+    };
+  },
+  url: (table, query = '') => `${CONFIG.SUPABASE_URL}/rest/v1/${table}${query}`,
+  authUrl: (path) => `${CONFIG.SUPABASE_URL}/auth/v1/${path}`,
+
+  async get(table, query = '') {
+    const r = await fetch(sb.url(table, query), { headers: sb.authHeaders() });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  },
+  async post(table, body) {
+    const r = await fetch(sb.url(table), { method: 'POST', headers: sb.authHeaders(), body: JSON.stringify(body) });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  },
+  async patch(table, id, body) {
+    const r = await fetch(sb.url(table, `?id=eq.${id}`), { method: 'PATCH', headers: sb.authHeaders(), body: JSON.stringify(body) });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  },
+  async delete(table, id) {
+    const r = await fetch(sb.url(table, `?id=eq.${id}`), { method: 'DELETE', headers: sb.authHeaders() });
+    if (!r.ok) throw new Error(await r.text());
+  },
+  async signIn(email, password) {
+    const r = await fetch(sb.authUrl('token?grant_type=password'), {
+      method: 'POST',
+      headers: { 'apikey': CONFIG.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error_description || data.msg || 'Login failed');
+    return data;
+  },
+  async signOut() {
+    const token = sessionStorage.getItem('sb_token');
+    if (token) {
+      await fetch(sb.authUrl('logout'), {
+        method: 'POST',
+        headers: { 'apikey': CONFIG.SUPABASE_ANON_KEY, 'Authorization': `Bearer ${token}` }
+      }).catch(() => {});
+    }
+    sessionStorage.removeItem('sb_token');
+    sessionStorage.removeItem('sb_user');
+  }
+};
+
+// ══════════════════════════════════════════════════════════════
+//  CLOUDINARY UPLOAD
+// ══════════════════════════════════════════════════════════════
+
+async function uploadToCloudinary(file, onProgress) {
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CONFIG.CLOUDINARY_UPLOAD_PRESET);
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `https://api.cloudinary.com/v1_1/${CONFIG.CLOUDINARY_CLOUD_NAME}/image/upload`);
+    xhr.upload.onprogress = e => { if (e.lengthComputable && onProgress) onProgress(Math.round(e.loaded/e.total*100)); };
+    xhr.onload = () => {
+      const data = JSON.parse(xhr.responseText);
+      if (xhr.status === 200) resolve(data.secure_url);
+      else reject(new Error(data.error?.message || 'Upload failed'));
+    };
+    xhr.onerror = () => reject(new Error('Network error during upload'));
+    xhr.send(fd);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════════════
+
+let works = [], collections = [], exhibitions = [], bio = { text: '', statement: '' };
+let activeFilter = 'all', activeTagFilter = null, activeMediumFilter = null;
+let editingWorkId = null, editingExhibitionId = null, currentExhibitionId = null;
+let exhibitionSelectedWorks = [];
+let pendingImageUrl = null; // Cloudinary URL after upload
+
+function isAdmin() { return document.body.classList.contains('admin'); }
+function uid() { return '_' + Math.random().toString(36).slice(2, 9); }
+
+// ══════════════════════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════════════════════
+
+let toastTimer;
+function toast(msg, isError = false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = isError ? 'show error' : 'show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = ''; }, 3000);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════════════════════════════
+
+function setAdminMode(on) {
+  document.body.classList.toggle('admin', on);
+  document.getElementById('adminLoginBtn').style.display = on ? 'none' : '';
+  document.getElementById('adminLogoutBtn').style.display = on ? '' : 'none';
+}
+
+document.getElementById('adminLoginBtn').addEventListener('click', () => {
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('loginError').style.display = 'none';
+  document.getElementById('loginModal').classList.add('open');
+  setTimeout(() => document.getElementById('loginEmail').focus(), 100);
+});
+
+document.getElementById('cancelLoginBtn').addEventListener('click', () => {
+  document.getElementById('loginModal').classList.remove('open');
+});
+
+document.getElementById('doLoginBtn').addEventListener('click', doLogin);
+document.getElementById('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+async function doLogin() {
+  if (!IS_CONFIGURED) { toast('Configure Supabase credentials first', true); return; }
+  const btn = document.getElementById('doLoginBtn');
+  const errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+  btn.innerHTML = '<span class="spinner"></span>Signing in…';
+  btn.disabled = true;
+  try {
+    const data = await sb.signIn(
+      document.getElementById('loginEmail').value.trim(),
+      document.getElementById('loginPassword').value
+    );
+    sessionStorage.setItem('sb_token', data.access_token);
+    sessionStorage.setItem('sb_user', data.user?.email || '');
+    document.getElementById('loginModal').classList.remove('open');
+    setAdminMode(true);
+    toast('Signed in as admin');
+  } catch(e) {
+    errEl.textContent = e.message;
+    errEl.style.display = 'block';
+  } finally {
+    btn.textContent = 'Sign In';
+    btn.disabled = false;
+  }
+}
+
+document.getElementById('adminLogoutBtn').addEventListener('click', async () => {
+  await sb.signOut();
+  setAdminMode(false);
+  toast('Signed out');
+});
+
+// Check for existing session on load
+function checkSession() {
+  const token = sessionStorage.getItem('sb_token');
+  if (token) setAdminMode(true);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DATA LOADING
+// ══════════════════════════════════════════════════════════════
+
+async function loadAll() {
+  if (!IS_CONFIGURED) {
+    // Demo mode — use placeholder data so the UI is navigable
+    works = DEMO_WORKS;
+    collections = DEMO_COLLECTIONS;
+    exhibitions = DEMO_EXHIBITIONS;
+    bio = DEMO_BIO;
+    renderAll();
+    return;
+  }
+  try {
+    [works, collections, exhibitions] = await Promise.all([
+      sb.get('works', '?order=year.desc,title.asc'),
+      sb.get('collections', '?order=name.asc'),
+      sb.get('exhibitions', '?order=start_date.desc')
+    ]);
+    // Load bio (single row)
+    const bioRows = await sb.get('bio', '?limit=1');
+    if (bioRows.length) bio = bioRows[0];
+    renderAll();
+  } catch(e) {
+    toast('Could not load data — check Supabase config', true);
+    console.error(e);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DEMO DATA (used when unconfigured)
+// ══════════════════════════════════════════════════════════════
+
+const DEMO_COLLECTIONS = [
+  { id: 'dc1', name: 'Sample Series A', description: 'A placeholder collection' },
+  { id: 'dc2', name: 'Sample Series B', description: 'Another placeholder collection' },
+];
+
+const DEMO_WORKS = [
+  { id: 'dw1', title: 'Untitled Study I', year: 2024, medium: 'Oil on linen', dimensions: '90 × 120 cm', collection_ids: ['dc1'], tags: ['painting','abstraction'], notes: 'Demo note — visible to admin only', image_url: null },
+  { id: 'dw2', title: 'Untitled Study II', year: 2024, medium: 'Oil on linen', dimensions: '90 × 120 cm', collection_ids: ['dc1'], tags: ['painting','texture'], notes: '', image_url: null },
+  { id: 'dw3', title: 'Ground Study I', year: 2023, medium: 'Encaustic on board', dimensions: '45 × 60 cm', collection_ids: ['dc2'], tags: ['encaustic','landscape'], notes: 'Demo — sold', image_url: null },
+  { id: 'dw4', title: 'Composition IV', year: 2022, medium: 'Mixed media on paper', dimensions: '100 × 70 cm', collection_ids: ['dc1'], tags: ['paper','mixed media'], notes: '', image_url: null },
+  { id: 'dw5', title: 'Sediment', year: 2021, medium: 'Oil on canvas', dimensions: '150 × 200 cm', collection_ids: [], tags: ['painting','large-scale'], notes: '', image_url: null },
+];
+
+const DEMO_EXHIBITIONS = [
+  { id: 'de1', name: 'Demo Exhibition A', place: 'Test Gallery, Dublin', start_date: '2024-03-01', end_date: '2024-04-28', work_ids: ['dw1','dw2'] },
+  { id: 'de2', name: 'Demo Exhibition B', place: 'Sample Space, Cork', start_date: '2023-09-15', end_date: '2023-11-12', work_ids: ['dw3'] },
+];
+
+const DEMO_BIO = {
+  text: "Tom's Sandpit — a testing environment for the portfolio tool. This instance is running in demo mode because Supabase and Cloudinary haven't been configured yet. All data shown is placeholder content.",
+  statement: '"Configure your Supabase and Cloudinary credentials, then this becomes a real live portfolio."'
+};
+
+// ══════════════════════════════════════════════════════════════
+//  PLACEHOLDER IMAGE GENERATOR
+// ══════════════════════════════════════════════════════════════
+
+const PLACEHOLDER_COLORS = [
+  ['#d9d2c7','#b8b0a4'],['#c9cfc4','#a8b0a2'],['#cdc4bb','#a89f96'],
+  ['#bfc9cc','#9aadb2'],['#d4c9be','#b0a096'],['#c5c9be','#9fa4a0'],
+];
+
+function makePlaceholderSrc(id, w=400, h=300) {
+  const idx = Math.abs((id||'x').split('').reduce((a,c)=>a+c.charCodeAt(0),0)) % PLACEHOLDER_COLORS.length;
+  const [bg, fg] = PLACEHOLDER_COLORS[idx];
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+    <rect width="${w}" height="${h}" fill="${bg}"/>
+    <rect x="${w*0.3}" y="${h*0.25}" width="${w*0.4}" height="${h*0.35}" rx="2" fill="none" stroke="${fg}" stroke-width="1.5"/>
+    <line x1="${w*0.42}" y1="${h*0.4}" x2="${w*0.58}" y2="${h*0.55}" stroke="${fg}" stroke-width="1.2"/>
+    <circle cx="${w*0.42}" cy="${h*0.37}" r="${w*0.04}" fill="${fg}"/>
+    <rect x="${w*0.3}" y="${h*0.68}" width="${w*0.4}" height="1.5" fill="${fg}" opacity="0.4"/>
+  </svg>`;
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+
+function thumbFor(work, w=400, h=300) {
+  return work.image_url || makePlaceholderSrc(work.id, w, h);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════════════════
+
+function getCollection(id) { return collections.find(c => c.id === id); }
+function getAllTags() { const s=new Set(); works.forEach(w=>(w.tags||[]).forEach(t=>s.add(t))); return [...s].sort(); }
+function getAllMediums() { const s=new Set(); works.forEach(w=>{if(w.medium)s.add(w.medium.split(' ')[0]);}); return [...s].sort(); }
+function getAllYears() { const s=new Set(); works.forEach(w=>{if(w.year)s.add(w.year);}); return [...s].sort((a,b)=>b-a); }
+
+// ══════════════════════════════════════════════════════════════
+//  SIDEBAR
+// ══════════════════════════════════════════════════════════════
+
+function renderSidebar() {
+  const colList = document.getElementById('sidebarCollections');
+  colList.innerHTML = '';
+  const allLi = document.createElement('li');
+  const allBtn = document.createElement('button');
+  allBtn.textContent = 'All Works';
+  allBtn.className = activeFilter === 'all' ? 'active' : '';
+  allBtn.addEventListener('click', () => { activeFilter='all'; activeTagFilter=null; activeMediumFilter=null; renderSidebar(); renderWorksGrid(); window.switchView('works'); });
+  allLi.appendChild(allBtn);
+  colList.appendChild(allLi);
+
+  collections.forEach(c => {
+    const li = document.createElement('li');
+    const btn = document.createElement('button');
+    btn.textContent = c.name;
+    btn.className = activeFilter === c.id ? 'active' : '';
+    btn.addEventListener('click', () => { activeFilter=c.id; activeTagFilter=null; activeMediumFilter=null; renderSidebar(); renderWorksGrid(); window.switchView('works'); });
+    li.appendChild(btn);
+    colList.appendChild(li);
+  });
+
+  renderTagList(document.getElementById('tagSearch').value);
+  renderSidebarMediums();
+}
+
+function renderTagList(query) {
+  const tagList = document.getElementById('sidebarTags');
+  tagList.innerHTML = '';
+  getAllTags().filter(t => !query || t.toLowerCase().includes(query.toLowerCase())).forEach(t => {
+    const li = document.createElement('li');
+    const btn = document.createElement('button');
+    const count = works.filter(w => (w.tags||[]).includes(t)).length;
+    btn.innerHTML = `${t} <span style="color:var(--light);font-size:0.7rem;">${count}</span>`;
+    btn.className = activeTagFilter === t ? 'active' : '';
+    btn.addEventListener('click', () => { activeTagFilter = activeTagFilter===t ? null : t; activeMediumFilter=null; renderTagList(query); renderSidebarMediums(); window.switchView('works'); });
+    li.appendChild(btn);
+    tagList.appendChild(li);
+  });
+}
+
+function renderSidebarMediums() {
+  const list = document.getElementById('sidebarMediums');
+  list.innerHTML = '';
+  getAllMediums().forEach(m => {
+    const li = document.createElement('li');
+    const btn = document.createElement('button');
+    btn.textContent = m;
+    btn.className = activeMediumFilter === m ? 'active' : '';
+    btn.addEventListener('click', () => { activeMediumFilter = activeMediumFilter===m ? null : m; activeTagFilter=null; renderSidebarMediums(); renderTagList(document.getElementById('tagSearch').value); window.switchView('works'); });
+    li.appendChild(btn);
+    list.appendChild(li);
+  });
+}
+
+document.getElementById('tagSearch').addEventListener('input', function() { renderTagList(this.value); });
+
+// ══════════════════════════════════════════════════════════════
+//  WORKS GRID
+// ══════════════════════════════════════════════════════════════
+
+function filterWorks() {
+  let ws = [...works];
+  if (activeFilter !== 'all') ws = ws.filter(w => (w.collection_ids||[]).includes(activeFilter));
+  const q = document.getElementById('searchWorks').value.toLowerCase();
+  if (q) ws = ws.filter(w => w.title.toLowerCase().includes(q) || (w.tags||[]).join(' ').includes(q) || (w.medium||'').toLowerCase().includes(q));
+  const yr = document.getElementById('filterYear').value;
+  if (yr) ws = ws.filter(w => String(w.year) === yr);
+  const med = document.getElementById('filterMedium').value;
+  if (med) ws = ws.filter(w => (w.medium||'').startsWith(med));
+  if (activeTagFilter) ws = ws.filter(w => (w.tags||[]).includes(activeTagFilter));
+  if (activeMediumFilter) ws = ws.filter(w => (w.medium||'').startsWith(activeMediumFilter));
+  ws.sort((a,b) => (b.year||0)-(a.year||0) || a.title.localeCompare(b.title));
+  return ws;
+}
+
+function renderWorksGrid() {
+  const grid = document.getElementById('worksGrid');
+  const filtered = filterWorks();
+
+  // Active filter bar
+  let bar = document.getElementById('activeFilterBar');
+  if (!bar) { bar=document.createElement('div'); bar.id='activeFilterBar'; bar.style.cssText='display:none;align-items:center;gap:0.7rem;margin-bottom:1rem;padding:0.5rem 0.8rem;background:var(--panel);font-size:0.78rem;color:var(--mid);'; grid.parentNode.insertBefore(bar,grid); }
+  if (activeTagFilter||activeMediumFilter) {
+    const label = activeTagFilter ? `Tag: ${activeTagFilter}` : `Medium: ${activeMediumFilter}`;
+    bar.innerHTML = `<span>Filtered by — <strong style="color:var(--ink)">${label}</strong></span> <button onclick="activeTagFilter=null;activeMediumFilter=null;renderSidebar();renderWorksGrid();" style="font-size:0.7rem;padding:0.15rem 0.5rem;background:none;border:1px solid var(--light);cursor:pointer;border-radius:2px;color:var(--mid);">✕ Clear</button>`;
+    bar.style.display='flex';
+  } else { bar.style.display='none'; }
+
+  // Filter dropdowns
+  const yearSel = document.getElementById('filterYear');
+  const yrVal = yearSel.value;
+  yearSel.innerHTML = '<option value="">All Years</option>';
+  getAllYears().forEach(y => yearSel.innerHTML += `<option value="${y}"${String(y)===yrVal?' selected':''}>${y}</option>`);
+
+  const medSel = document.getElementById('filterMedium');
+  const medVal = medSel.value;
+  medSel.innerHTML = '<option value="">All Media</option>';
+  getAllMediums().forEach(m => medSel.innerHTML += `<option value="${m}"${m===medVal?' selected':''}>${m}</option>`);
+
+  document.getElementById('statWorks').textContent = works.length;
+  document.getElementById('statCollections').textContent = collections.length;
+  document.getElementById('statExhibitions').textContent = exhibitions.length;
+
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">◻</div><p>No works found.</p></div>`;
+    return;
+  }
+  grid.innerHTML = '';
+  filtered.forEach(w => {
+    const card = document.createElement('div');
+    card.className = 'work-card';
+    const colNames = (w.collection_ids||[]).map(id=>getCollection(id)).filter(Boolean).map(c=>c.name);
+    card.innerHTML = `
+      <img class="work-thumb" src="${thumbFor(w)}" alt="${w.title}">
+      <div class="work-info">
+        <div class="work-title">${w.title}</div>
+        <div class="work-meta">${w.year||''}${w.medium?' · '+w.medium:''}${colNames.length?' · '+colNames.join(', '):''}</div>
+        ${(w.tags||[]).length?`<div class="work-tags">${w.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>`:''}
+      </div>`;
+    card.addEventListener('click', () => openDetail(w.id));
+    grid.appendChild(card);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  COLLECTIONS VIEW
+// ══════════════════════════════════════════════════════════════
+
+function renderCollections() {
+  const grid = document.getElementById('collectionsGrid');
+  if (!collections.length) { grid.innerHTML=`<div class="empty-state"><div class="empty-icon">◻</div><p>No collections yet.</p></div>`; return; }
+  grid.innerHTML = '';
+  collections.forEach(c => {
+    const cWorks = works.filter(w => (w.collection_ids||[]).includes(c.id));
+    const card = document.createElement('div');
+    card.className = 'collection-card';
+    const thumbs = cWorks.slice(0,3).map(w=>`<div>${w.image_url?`<img src="${w.image_url}" alt="">`:''}</div>`).join('');
+    const empties = Array(3-Math.min(cWorks.length,3)).fill('<div></div>').join('');
+    card.innerHTML = `<div class="collection-strip">${thumbs}${empties}</div><div class="collection-meta"><h3>${c.name}</h3><p>${cWorks.length} work${cWorks.length!==1?'s':''}${c.description?' — '+c.description:''}</p></div>`;
+    card.addEventListener('click', () => { activeFilter=c.id; renderSidebar(); renderWorksGrid(); window.switchView('works'); });
+    grid.appendChild(card);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  EXHIBITIONS
+// ══════════════════════════════════════════════════════════════
+
+function renderExhibitions() {
+  const list = document.getElementById('exhibitionsList');
+  if (!exhibitions.length) { list.innerHTML=`<div class="empty-state"><div class="empty-icon">◻</div><p>No exhibitions yet.</p></div>`; return; }
+  list.innerHTML = '';
+  [...exhibitions].sort((a,b)=>(b.start_date||'').localeCompare(a.start_date||'')).forEach(ex => {
+    const card = document.createElement('div');
+    card.className = 'exhibition-card';
+    const start = ex.start_date ? new Date(ex.start_date).toLocaleDateString('en-IE',{month:'short',year:'numeric'}) : '';
+    const end = ex.end_date ? new Date(ex.end_date).toLocaleDateString('en-IE',{month:'short',year:'numeric'}) : '';
+    const wCount = (ex.work_ids||[]).length;
+    card.innerHTML = `<div><h3>${ex.name}</h3><p>${ex.place||''}${wCount?' · '+wCount+' work'+(wCount!==1?'s':''):''}</p></div><div class="exhibition-date">${start}${end&&end!==start?' – '+end:''}</div>`;
+    card.addEventListener('click', () => openExhibitionDetail(ex.id));
+    list.appendChild(card);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  TIMELINE
+// ══════════════════════════════════════════════════════════════
+
+function renderTimeline() {
+  const container = document.getElementById('timelineView');
+  const byYear = {};
+  works.forEach(w => { const y=w.year||'Unknown'; if(!byYear[y])byYear[y]=[]; byYear[y].push(w); });
+  const years = Object.keys(byYear).sort((a,b)=>b-a);
+  if (!years.length) { container.innerHTML=`<div class="empty-state"><div class="empty-icon">◻</div><p>No works yet.</p></div>`; return; }
+  container.innerHTML = '';
+  years.forEach(y => {
+    const row = document.createElement('div');
+    row.className = 'timeline-year';
+    row.innerHTML = `<div class="timeline-year-label">${y}</div><div class="timeline-works"></div>`;
+    const wd = row.querySelector('.timeline-works');
+    byYear[y].forEach(w => {
+      const item = document.createElement('div');
+      item.className = 'timeline-item';
+      item.innerHTML = `<img src="${thumbFor(w,160,120)}" style="width:80px;height:60px;object-fit:cover;flex-shrink:0;" alt="${w.title}"><div class="timeline-text"><h4>${w.title}</h4><p>${w.medium||''}${w.dimensions?' · '+w.dimensions:''}</p></div>`;
+      item.addEventListener('click', () => openDetail(w.id));
+      wd.appendChild(item);
+    });
+    container.appendChild(row);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  WORK DETAIL
+// ══════════════════════════════════════════════════════════════
+
+function openDetail(id) {
+  const w = works.find(x => x.id === id);
+  if (!w) return;
+  editingWorkId = id;
+  document.getElementById('detailMedia').innerHTML = `
+    <button class="detail-close" id="detailClose">✕</button>
+    <img src="${thumbFor(w,600,500)}" alt="${w.title}" style="width:100%;height:100%;object-fit:contain;display:block;">`;
+  document.getElementById('detailTitle').textContent = w.title;
+  document.getElementById('detailYear').textContent = w.year || '—';
+  document.getElementById('detailMedium').textContent = w.medium || '—';
+  document.getElementById('detailDimensions').textContent = w.dimensions || '—';
+  const colNames = (w.collection_ids||[]).map(id=>getCollection(id)).filter(Boolean).map(c=>c.name);
+  document.getElementById('detailCollection').textContent = colNames.length ? colNames.join(', ') : '—';
+  document.getElementById('detailTags').textContent = (w.tags||[]).length ? w.tags.join(', ') : '—';
+  document.getElementById('detailNotes').textContent = w.notes || '—';
+  document.getElementById('detailOverlay').classList.add('open');
+}
+
+document.getElementById('detailOverlay').addEventListener('click', e => {
+  if (e.target===document.getElementById('detailOverlay')||e.target.id==='detailClose') document.getElementById('detailOverlay').classList.remove('open');
+});
+document.getElementById('editWorkBtn').addEventListener('click', () => { document.getElementById('detailOverlay').classList.remove('open'); openWorkModal(editingWorkId); });
+document.getElementById('deleteWorkBtn').addEventListener('click', async () => {
+  if (!confirm('Delete this work? This cannot be undone.')) return;
+  try {
+    if (IS_CONFIGURED) await sb.delete('works', editingWorkId);
+    works = works.filter(w => w.id !== editingWorkId);
+    document.getElementById('detailOverlay').classList.remove('open');
+    renderAll(); toast('Work deleted');
+  } catch(e) { toast('Delete failed: ' + e.message, true); }
+});
+
+// ══════════════════════════════════════════════════════════════
+//  ADD / EDIT WORK MODAL
+// ══════════════════════════════════════════════════════════════
+
+function renderCollectionCheckboxes(selectedIds) {
+  const container = document.getElementById('wCollectionsList');
+  if (!collections.length) { container.innerHTML='<div style="padding:0.5rem 0.8rem;font-size:0.8rem;color:var(--mid);">No collections yet.</div>'; return; }
+  container.innerHTML = collections.map(c => `
+    <label style="display:flex;align-items:center;gap:0.6rem;padding:0.4rem 0.8rem;cursor:pointer;font-size:0.82rem;" onmouseover="this.style.background='var(--panel)'" onmouseout="this.style.background=''">
+      <input type="checkbox" value="${c.id}" ${(selectedIds||[]).includes(c.id)?'checked':''} style="accent-color:var(--accent);width:14px;height:14px;"> ${c.name}
+    </label>`).join('');
+}
+
+function getSelectedCollections() {
+  return Array.from(document.querySelectorAll('#wCollectionsList input[type=checkbox]:checked')).map(cb=>cb.value);
+}
+
+function openWorkModal(id) {
+  editingWorkId = id || null;
+  pendingImageUrl = null;
+  document.getElementById('uploadPreviews').innerHTML = '';
+  document.getElementById('wFile').value = '';
+  document.getElementById('uploadProgress').style.display = 'none';
+  document.getElementById('workModalTitle').textContent = id ? 'Edit Work' : 'Add New Work';
+  if (id) {
+    const w = works.find(x => x.id === id);
+    document.getElementById('wTitle').value = w.title;
+    document.getElementById('wYear').value = w.year || '';
+    document.getElementById('wMedium').value = w.medium || '';
+    document.getElementById('wDimensions').value = w.dimensions || '';
+    renderCollectionCheckboxes(w.collection_ids || []);
+    document.getElementById('wTags').value = (w.tags||[]).join(', ');
+    document.getElementById('wNotes').value = w.notes || '';
+    if (w.image_url) {
+      const img = document.createElement('img');
+      img.className = 'upload-preview';
+      img.src = w.image_url;
+      document.getElementById('uploadPreviews').appendChild(img);
+    }
+  } else {
+    document.getElementById('wTitle').value = '';
+    document.getElementById('wYear').value = new Date().getFullYear();
+    document.getElementById('wMedium').value = '';
+    document.getElementById('wDimensions').value = '';
+    renderCollectionCheckboxes([]);
+    document.getElementById('wTags').value = '';
+    document.getElementById('wNotes').value = '';
+  }
+  document.getElementById('workModal').classList.add('open');
+}
+
+document.getElementById('addWorkBtn').addEventListener('click', () => openWorkModal(null));
+document.getElementById('cancelWorkBtn').addEventListener('click', () => document.getElementById('workModal').classList.remove('open'));
+
+document.getElementById('wFile').addEventListener('change', async function() {
+  const file = this.files[0];
+  if (!file) return;
+  const previews = document.getElementById('uploadPreviews');
+  const progress = document.getElementById('uploadProgress');
+  previews.innerHTML = '';
+  pendingImageUrl = null;
+
+  // Show local preview immediately
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = document.createElement('img');
+    img.className = 'upload-preview';
+    img.src = e.target.result;
+    previews.appendChild(img);
+  };
+  reader.readAsDataURL(file);
+
+  if (!IS_CONFIGURED) { toast('Cloudinary not configured — image won\'t be saved', true); return; }
+
+  progress.style.display = 'block';
+  progress.textContent = 'Uploading… 0%';
+  try {
+    pendingImageUrl = await uploadToCloudinary(file, pct => { progress.textContent = `Uploading… ${pct}%`; });
+    progress.textContent = '✓ Uploaded';
+    setTimeout(() => { progress.style.display='none'; }, 2000);
+  } catch(e) {
+    progress.textContent = 'Upload failed: ' + e.message;
+    toast('Image upload failed', true);
+  }
+});
+
+document.getElementById('saveWorkBtn').addEventListener('click', async () => {
+  const title = document.getElementById('wTitle').value.trim();
+  if (!title) { alert('Please enter a title.'); return; }
+  const btn = document.getElementById('saveWorkBtn');
+  btn.innerHTML = '<span class="spinner"></span>Saving…';
+  btn.disabled = true;
+
+  const existing = editingWorkId ? works.find(w=>w.id===editingWorkId) : null;
+  const data = {
+    title,
+    year: parseInt(document.getElementById('wYear').value) || null,
+    medium: document.getElementById('wMedium').value.trim(),
+    dimensions: document.getElementById('wDimensions').value.trim(),
+    collection_ids: getSelectedCollections(),
+    tags: document.getElementById('wTags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    notes: document.getElementById('wNotes').value.trim(),
+    image_url: pendingImageUrl || (existing ? existing.image_url : null)
+  };
+
+  try {
+    if (IS_CONFIGURED) {
+      if (editingWorkId) {
+        const updated = await sb.patch('works', editingWorkId, data);
+        const idx = works.findIndex(w=>w.id===editingWorkId);
+        works[idx] = updated[0] || { ...works[idx], ...data };
+      } else {
+        const created = await sb.post('works', data);
+        works.push(created[0] || { id: uid(), ...data });
+      }
+    } else {
+      // Demo mode: update local array only
+      if (editingWorkId) {
+        const idx = works.findIndex(w=>w.id===editingWorkId);
+        works[idx] = { ...works[idx], ...data };
+      } else {
+        works.push({ id: uid(), ...data });
+      }
+    }
+    pendingImageUrl = null;
+    document.getElementById('workModal').classList.remove('open');
+    renderAll();
+    toast(editingWorkId ? 'Work updated' : 'Work added');
+  } catch(e) {
+    toast('Save failed: ' + e.message, true);
+  } finally {
+    btn.textContent = 'Save Work';
+    btn.disabled = false;
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
+//  COLLECTION MODAL
+// ══════════════════════════════════════════════════════════════
+
+function openCollectionModal() {
+  document.getElementById('cName').value = '';
+  document.getElementById('cDesc').value = '';
+  document.getElementById('collectionModal').classList.add('open');
+}
+document.getElementById('addCollectionBtn').addEventListener('click', openCollectionModal);
+document.getElementById('addCollectionBtn2').addEventListener('click', openCollectionModal);
+document.getElementById('cancelCollectionBtn').addEventListener('click', () => document.getElementById('collectionModal').classList.remove('open'));
+document.getElementById('saveCollectionBtn').addEventListener('click', async () => {
+  const name = document.getElementById('cName').value.trim();
+  if (!name) { alert('Please enter a collection name.'); return; }
+  const data = { name, description: document.getElementById('cDesc').value.trim() };
+  try {
+    if (IS_CONFIGURED) {
+      const created = await sb.post('collections', data);
+      collections.push(created[0] || { id: uid(), ...data });
+    } else {
+      collections.push({ id: uid(), ...data });
+    }
+    document.getElementById('collectionModal').classList.remove('open');
+    renderAll(); toast('Collection created');
+  } catch(e) { toast('Failed: ' + e.message, true); }
+});
+
+// ══════════════════════════════════════════════════════════════
+//  EXHIBITION DETAIL
+// ══════════════════════════════════════════════════════════════
+
+function openExhibitionDetail(id) {
+  const ex = exhibitions.find(e=>e.id===id);
+  if (!ex) return;
+  currentExhibitionId = id;
+  document.getElementById('exDetailTitle').textContent = ex.name;
+  const start = ex.start_date ? new Date(ex.start_date).toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'}) : '';
+  const end = ex.end_date ? new Date(ex.end_date).toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'}) : '';
+  document.getElementById('exDetailMeta').textContent = [ex.place, start&&end&&end!==start?`${start} – ${end}`:start].filter(Boolean).join(' · ');
+
+  const worksContainer = document.getElementById('exDetailWorks');
+  worksContainer.innerHTML = '';
+  const exWorks = (ex.work_ids||[]).map(wid=>works.find(w=>w.id===wid)).filter(Boolean);
+  if (!exWorks.length) {
+    worksContainer.innerHTML = `<p style="font-size:0.85rem;color:var(--mid);font-style:italic;padding:1rem 0;">No works associated with this exhibition.</p>`;
+  } else {
+    exWorks.forEach(w => {
+      const row = document.createElement('div');
+      row.style.cssText='display:grid;grid-template-columns:72px 1fr;gap:0.9rem;align-items:center;padding:0.7rem;background:var(--panel);border-radius:2px;cursor:pointer;transition:background 0.12s;';
+      row.onmouseover=()=>row.style.background='#e8e3db';
+      row.onmouseout=()=>row.style.background='var(--panel)';
+      row.innerHTML = `
+        <img src="${thumbFor(w,144,108)}" style="width:72px;height:54px;object-fit:cover;display:block;" alt="${w.title}">
+        <div>
+          <div style="font-family:var(--serif);font-style:italic;font-size:1rem;margin-bottom:0.2rem;">${w.title}</div>
+          <div style="font-size:0.75rem;color:var(--mid);">${w.year||''}${w.medium?' · '+w.medium:''}${w.dimensions?' · '+w.dimensions:''}</div>
+          ${w.notes&&isAdmin()?`<div style="font-size:0.72rem;color:var(--accent);margin-top:0.2rem;font-style:italic;">${w.notes}</div>`:''}
+        </div>`;
+      row.addEventListener('click', () => { document.getElementById('exhibitionDetailOverlay').classList.remove('open'); openDetail(w.id); });
+      worksContainer.appendChild(row);
+    });
+  }
+  document.getElementById('exhibitionDetailOverlay').classList.add('open');
+}
+
+document.getElementById('exDetailClose').addEventListener('click', () => document.getElementById('exhibitionDetailOverlay').classList.remove('open'));
+document.getElementById('exhibitionDetailOverlay').addEventListener('click', e => { if(e.target===document.getElementById('exhibitionDetailOverlay')) document.getElementById('exhibitionDetailOverlay').classList.remove('open'); });
+document.getElementById('exDetailEditBtn').addEventListener('click', () => { document.getElementById('exhibitionDetailOverlay').classList.remove('open'); openExhibitionModal(currentExhibitionId); });
+document.getElementById('exDetailDeleteBtn').addEventListener('click', async () => {
+  if (!confirm('Delete this exhibition?')) return;
+  try {
+    if (IS_CONFIGURED) await sb.delete('exhibitions', currentExhibitionId);
+    exhibitions = exhibitions.filter(e=>e.id!==currentExhibitionId);
+    document.getElementById('exhibitionDetailOverlay').classList.remove('open');
+    renderAll(); toast('Exhibition deleted');
+  } catch(e) { toast('Delete failed: '+e.message, true); }
+});
+document.getElementById('exDetailPrintBtn').addEventListener('click', () => printContactSheet(currentExhibitionId));
+
+// ══════════════════════════════════════════════════════════════
+//  EXHIBITION MODAL
+// ══════════════════════════════════════════════════════════════
+
+function openExhibitionModal(id) {
+  editingExhibitionId = id || null;
+  exhibitionSelectedWorks = [];
+  document.getElementById('exhibitionModalTitle').textContent = id ? 'Edit Exhibition' : 'New Exhibition';
+  if (id) {
+    const ex = exhibitions.find(e=>e.id===id);
+    document.getElementById('eName').value = ex.name;
+    document.getElementById('ePlace').value = ex.place || '';
+    document.getElementById('eStart').value = ex.start_date || '';
+    document.getElementById('eEnd').value = ex.end_date || '';
+    exhibitionSelectedWorks = [...(ex.work_ids||[])];
+  } else {
+    ['eName','ePlace','eStart','eEnd'].forEach(id=>document.getElementById(id).value='');
+  }
+  renderExhibitionWorksList('');
+  renderSelectedWorks();
+  document.getElementById('exhibitionModal').classList.add('open');
+}
+
+function renderExhibitionWorksList(q) {
+  const list = document.getElementById('eWorksList');
+  const filtered = works.filter(w=>!exhibitionSelectedWorks.includes(w.id)&&(!q||w.title.toLowerCase().includes(q)));
+  list.innerHTML = filtered.map(w=>`<div style="padding:0.5rem 0.8rem;cursor:pointer;font-size:0.82rem;border-bottom:1px solid var(--panel);" onmouseover="this.style.background='var(--panel)'" onmouseout="this.style.background=''" data-wid="${w.id}"><strong style="font-style:italic;">${w.title}</strong> <span style="color:var(--mid);font-size:0.75rem;">${w.year||''}</span></div>`).join('') || '<div style="padding:0.5rem 0.8rem;color:var(--mid);font-size:0.82rem;">No works found</div>';
+  list.querySelectorAll('[data-wid]').forEach(el=>{
+    el.addEventListener('click',()=>{ exhibitionSelectedWorks.push(el.dataset.wid); renderExhibitionWorksList(document.getElementById('eWorkSearch').value.toLowerCase()); renderSelectedWorks(); });
+  });
+}
+
+function renderSelectedWorks() {
+  const div = document.getElementById('eSelectedWorks');
+  div.innerHTML = exhibitionSelectedWorks.map(id=>{ const w=works.find(x=>x.id===id); return w?`<span class="tag" style="cursor:pointer;background:var(--ink);color:var(--white);" data-remove="${id}">${w.title} ✕</span>`:''; }).join('');
+  div.querySelectorAll('[data-remove]').forEach(el=>{
+    el.addEventListener('click',()=>{ exhibitionSelectedWorks=exhibitionSelectedWorks.filter(id=>id!==el.dataset.remove); renderExhibitionWorksList(document.getElementById('eWorkSearch').value.toLowerCase()); renderSelectedWorks(); });
+  });
+}
+
+document.getElementById('eWorkSearch').addEventListener('input', function() { renderExhibitionWorksList(this.value.toLowerCase()); });
+document.getElementById('addExhibitionBtn').addEventListener('click', () => openExhibitionModal(null));
+document.getElementById('cancelExhibitionBtn').addEventListener('click', () => document.getElementById('exhibitionModal').classList.remove('open'));
+
+document.getElementById('saveExhibitionBtn').addEventListener('click', async () => {
+  const name = document.getElementById('eName').value.trim();
+  if (!name) { alert('Please enter a name.'); return; }
+  const btn = document.getElementById('saveExhibitionBtn');
+  btn.innerHTML = '<span class="spinner"></span>Saving…';
+  btn.disabled = true;
+  const data = { name, place: document.getElementById('ePlace').value.trim(), start_date: document.getElementById('eStart').value, end_date: document.getElementById('eEnd').value, work_ids: [...exhibitionSelectedWorks] };
+  try {
+    if (IS_CONFIGURED) {
+      if (editingExhibitionId) {
+        const updated = await sb.patch('exhibitions', editingExhibitionId, data);
+        const idx = exhibitions.findIndex(e=>e.id===editingExhibitionId);
+        exhibitions[idx] = updated[0] || { ...exhibitions[idx], ...data };
+      } else {
+        const created = await sb.post('exhibitions', data);
+        exhibitions.push(created[0] || { id: uid(), ...data });
+      }
+    } else {
+      if (editingExhibitionId) { const idx=exhibitions.findIndex(e=>e.id===editingExhibitionId); exhibitions[idx]={...exhibitions[idx],...data}; }
+      else { exhibitions.push({ id: uid(), ...data }); }
+    }
+    document.getElementById('exhibitionModal').classList.remove('open');
+    renderAll(); toast(editingExhibitionId ? 'Exhibition updated' : 'Exhibition created');
+  } catch(e) { toast('Save failed: '+e.message, true); }
+  finally { btn.textContent='Save Exhibition'; btn.disabled=false; }
+});
+
+// ══════════════════════════════════════════════════════════════
+//  BIO
+// ══════════════════════════════════════════════════════════════
+
+document.getElementById('editBioBtn').addEventListener('click', () => {
+  document.getElementById('editBioText').value = bio.text;
+  document.getElementById('editBioStatement').value = bio.statement;
+  document.getElementById('bioModal').classList.add('open');
+});
+document.getElementById('cancelBioBtn').addEventListener('click', () => document.getElementById('bioModal').classList.remove('open'));
+document.getElementById('saveBioBtn').addEventListener('click', async () => {
+  bio.text = document.getElementById('editBioText').value;
+  bio.statement = document.getElementById('editBioStatement').value;
+  document.getElementById('bioText').textContent = bio.text;
+  document.getElementById('bioStatement').textContent = bio.statement;
+  try {
+    if (IS_CONFIGURED) {
+      if (bio.id) await sb.patch('bio', bio.id, { text: bio.text, statement: bio.statement });
+      else { const r = await sb.post('bio', { text: bio.text, statement: bio.statement }); bio = r[0]; }
+    }
+    document.getElementById('bioModal').classList.remove('open');
+    toast('Bio saved');
+  } catch(e) { toast('Save failed: '+e.message, true); }
+});
+
+// ══════════════════════════════════════════════════════════════
+//  PRINT CONTACT SHEET
+// ══════════════════════════════════════════════════════════════
+
+function printContactSheet(id) {
+  const ex = exhibitions.find(e=>e.id===id);
+  if (!ex) return;
+  const exWorks = (ex.work_ids||[]).map(wid=>works.find(w=>w.id===wid)).filter(Boolean);
+  const start = ex.start_date ? new Date(ex.start_date).toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'}) : '';
+  const end = ex.end_date ? new Date(ex.end_date).toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'}) : '';
+  const dateStr = start?(end&&end!==start?`${start} – ${end}`:start):'';
+  const worksHtml = exWorks.map((w,i)=>{
+    const colNames=(w.collection_ids||[]).map(cid=>{const c=getCollection(cid);return c?c.name:null;}).filter(Boolean);
+    return `<div class="print-work-item"><img class="print-work-thumb" src="${thumbFor(w,180,136)}" alt="${w.title}"><div class="print-work-info"><div class="print-work-title">${i+1}. ${w.title}</div><div class="print-work-meta">${w.year?`<strong>${w.year}</strong>`:''} ${w.medium?`<br>${w.medium}`:''} ${w.dimensions?`<br>${w.dimensions}`:''} ${colNames.length?`<br><em>${colNames.join(', ')}</em>`:''}</div>${w.notes?`<div class="print-work-notes">${w.notes}</div>`:''}</div></div>`;
+  }).join('');
+  const sheet = document.getElementById('printContactSheet');
+  sheet.innerHTML = `<div class="print-header"><div style="font-size:7.5pt;letter-spacing:0.15em;text-transform:uppercase;color:#6b6660;margin-bottom:6pt;">Tom's Sandpit — Exhibition Contact Sheet</div><h1>${ex.name}</h1><div class="print-meta">${[ex.place,dateStr].filter(Boolean).join(' · ')}${exWorks.length?' · '+exWorks.length+' work'+(exWorks.length!==1?'s':''):''}</div></div><div class="print-works-grid">${worksHtml}</div>`;
+  sheet.style.display='block';
+  window.print();
+  sheet.style.display='none';
+}
+
+// ══════════════════════════════════════════════════════════════
+//  VIEW SWITCHING
+// ══════════════════════════════════════════════════════════════
+
+function switchView(name) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelector(`#view-${name}`).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
+  if(name==='works') renderWorksGrid();
+  if(name==='collections') renderCollections();
+  if(name==='exhibitions') renderExhibitions();
+  if(name==='timeline') renderTimeline();
+}
+
+window.switchView = function(name) {
+  switchView(name);
+  document.querySelectorAll('#mobileNav .tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
+  document.querySelector('aside').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+};
+
+document.querySelectorAll('header .tab-btn').forEach(b=>{ b.onclick=()=>window.switchView(b.dataset.view); });
+document.querySelectorAll('#mobileNav .tab-btn').forEach(b=>{ b.onclick=()=>window.switchView(b.dataset.view); });
+
+// ══════════════════════════════════════════════════════════════
+//  MOBILE
+// ══════════════════════════════════════════════════════════════
+
+function showMobileNav() { document.getElementById('mobileNav').style.display = window.innerWidth<=900?'flex':'none'; }
+document.getElementById('mobileMenuBtn').addEventListener('click', () => { document.querySelector('aside').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('open'); });
+document.getElementById('sidebarOverlay').addEventListener('click', () => { document.querySelector('aside').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('open'); });
+showMobileNav();
+window.addEventListener('resize', showMobileNav);
+
+// ══════════════════════════════════════════════════════════════
+//  RENDER ALL
+// ══════════════════════════════════════════════════════════════
+
+function renderAll() {
+  renderSidebar();
+  renderWorksGrid();
+  renderCollections();
+  renderExhibitions();
+  renderTimeline();
+  document.getElementById('bioText').textContent = bio.text || '';
+  document.getElementById('bioStatement').textContent = bio.statement || '';
+}
+
+// ── INIT ──
+checkSession();
+loadAll();
+</script>
+</body>
+</html>
