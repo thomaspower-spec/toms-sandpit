@@ -328,7 +328,8 @@
   <main>
     <!-- WORKS -->
     <div class="view active" id="view-works">
-      <div class="page-actions" style="display:flex;justify-content:flex-end;padding:1rem 0 1.5rem;">
+      <div class="page-actions" style="display:flex;justify-content:flex-end;align-items:center;gap:0.7rem;padding:1rem 0 1.5rem;" id="worksActions">
+        <span id="collectionActions" style="display:none;gap:0.7rem;align-items:center;"></span>
         <button class="btn primary admin-only" id="addWorkBtn">+ Add Work</button>
       </div>
       <div class="works-grid" id="worksGrid"></div>
@@ -485,29 +486,6 @@
       <button class="btn" id="cancelCollectionBtn">Cancel</button>
       <button class="btn" id="deleteCollectionBtn" style="display:none;color:var(--accent);border-color:var(--accent);">Delete</button>
       <button class="btn accent" id="saveCollectionBtn">Save Collection</button>
-    </div>
-  </div>
-</div>
-
-<!-- COLLECTION DETAIL OVERLAY -->
-<div class="detail-overlay" id="collectionDetailOverlay">
-  <div class="detail-panel" style="grid-template-columns:1fr;max-width:700px;">
-    <div class="detail-info" style="padding:2.5rem;">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:1.5rem;">
-        <div>
-          <h2 class="detail-title" id="colDetailTitle" style="margin-bottom:0.4rem;"></h2>
-          <p id="colDetailMeta" style="font-size:0.8rem;color:var(--mid);"></p>
-        </div>
-        <button class="detail-close" id="colDetailClose" style="position:static;background:var(--panel);color:var(--ink);flex-shrink:0;width:32px;height:32px;">✕</button>
-      </div>
-      <div id="colDetailWorks" style="display:flex;flex-direction:column;gap:0.7rem;max-height:55vh;overflow-y:auto;margin-bottom:1.5rem;"></div>
-      <div style="display:flex;gap:0.7rem;flex-wrap:wrap;border-top:1px solid var(--light);padding-top:1.2rem;">
-        <button class="btn" id="colDetailBrowseBtn">Browse Collection</button>
-        <button class="btn admin-only" id="colDetailPrintBtn">⎙ Print Contact Sheet</button>
-        <button class="btn admin-only" id="colDetailExportBtn">⬇ Export Zip</button>
-        <button class="btn admin-only" id="colDetailEditBtn">Edit</button>
-        <button class="btn admin-only" style="color:var(--accent);border-color:var(--accent);" id="colDetailDeleteBtn">Delete</button>
-      </div>
     </div>
   </div>
 </div>
@@ -905,7 +883,7 @@ function renderWorksGrid() {
   let ws = visibleWorks();
   if (activeFilter !== 'all') ws = ws.filter(w => (w.collection_ids || []).includes(activeFilter));
 
-  // Show/hide collection heading
+  // Show/hide collection heading and action buttons
   let heading = document.getElementById('collectionHeading');
   if (!heading) {
     heading = document.createElement('div');
@@ -913,12 +891,27 @@ function renderWorksGrid() {
     heading.style.cssText = 'display:flex;align-items:baseline;justify-content:space-between;gap:1rem;margin-bottom:1.2rem;flex-wrap:wrap;';
     grid.parentNode.insertBefore(heading, grid);
   }
+  const colActions = document.getElementById('collectionActions');
   if (activeFilter !== 'all') {
     const col = getCollection(activeFilter);
     heading.innerHTML = `<h2 style="font-family:var(--serif);font-size:1.6rem;font-weight:300;font-style:italic;color:var(--ink);">${col ? col.name : ''}</h2>`;
     heading.style.display = 'flex';
+    // Collection action buttons — admin only
+    if (isAdmin() && col) {
+      colActions.innerHTML = `
+        <button class="btn" onclick="printContactSheetForCollection('${col.id}')">⎙ Print</button>
+        <button class="btn" onclick="showExportChooser('worksExportChooser','worksExportTrigger',(q)=>exportZip('collection','${col.id}',q))" id="worksExportTrigger">⬇ Export Zip</button>
+        <button class="btn" onclick="openCollectionModal('${col.id}')">Edit</button>
+      `;
+      colActions.style.display = 'flex';
+    } else {
+      colActions.innerHTML = '';
+      colActions.style.display = 'none';
+    }
   } else {
     heading.style.display = 'none';
+    colActions.innerHTML = '';
+    colActions.style.display = 'none';
   }
 
   if(!ws.length){ grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">◻</div><p>No works yet.</p></div>`; return; }
@@ -967,7 +960,7 @@ function renderCollections() {
       adminControls=badge+shareBtn;
     }
     card.innerHTML=`<div style="position:relative;">${adminControls}<div class="collection-strip">${thumbs}${empties}</div></div><div class="collection-meta"><h3>${c.name}</h3><p>${cWorks.length} work${cWorks.length!==1?'s':''}${c.description?' — '+c.description:''}</p></div>`;
-    card.addEventListener('click',()=>openCollectionDetail(c.id));
+    card.addEventListener('click',()=>{ activeFilter=c.id; renderWorksGrid(); window.switchView('works'); });
     grid.appendChild(card);
   });
 }
@@ -989,54 +982,6 @@ async function deleteCollection(id) {
     toast('Collection deleted');
   } catch(e) { toast('Delete failed: ' + e.message, true); }
 }
-
-// ══════════════════════════════════════════════════════════════
-//  COLLECTION DETAIL OVERLAY
-// ══════════════════════════════════════════════════════════════
-
-let currentCollectionId = null;
-
-function openCollectionDetail(id) {
-  const c = collections.find(x => x.id === id);
-  if (!c) return;
-  currentCollectionId = id;
-  const cWorks = visibleWorks().filter(w => (w.collection_ids || []).includes(c.id));
-  document.getElementById('colDetailTitle').textContent = c.name;
-  document.getElementById('colDetailMeta').textContent = [
-    c.description,
-    cWorks.length + ' work' + (cWorks.length !== 1 ? 's' : ''),
-    c.visibility !== 'published' ? c.visibility : ''
-  ].filter(Boolean).join(' · ');
-  const worksContainer = document.getElementById('colDetailWorks');
-  worksContainer.innerHTML = '';
-  if (!cWorks.length) {
-    worksContainer.innerHTML = `<p style="font-size:0.85rem;color:var(--mid);font-style:italic;padding:1rem 0;">No works in this collection.</p>`;
-  } else {
-    cWorks.forEach(w => {
-      const row = document.createElement('div');
-      row.style.cssText = 'display:grid;grid-template-columns:72px 1fr;gap:0.9rem;align-items:center;padding:0.7rem;background:var(--panel);border-radius:2px;cursor:pointer;transition:background 0.12s;';
-      row.onmouseover = () => row.style.background = '#e8e3db';
-      row.onmouseout = () => row.style.background = 'var(--panel)';
-      row.innerHTML = `<img src="${thumbFor(w,144,108)}" style="width:72px;height:54px;object-fit:cover;" alt="${w.title}"><div><div style="font-family:var(--serif);font-style:italic;font-size:1rem;margin-bottom:0.2rem;">${w.title}</div><div style="font-size:0.75rem;color:var(--mid);">${w.year||''}${w.medium?' · '+w.medium:''}${w.dimensions?' · '+w.dimensions:''}</div></div>`;
-      row.addEventListener('click', () => { document.getElementById('collectionDetailOverlay').classList.remove('open'); openDetail(w.id); });
-      worksContainer.appendChild(row);
-    });
-  }
-  // Hide export size chooser if visible from a previous open
-  hideExportChooser('colDetailExportChooser');
-  document.getElementById('collectionDetailOverlay').classList.add('open');
-}
-
-document.getElementById('colDetailClose').addEventListener('click', () => document.getElementById('collectionDetailOverlay').classList.remove('open'));
-document.getElementById('collectionDetailOverlay').addEventListener('click', e => { if (e.target === document.getElementById('collectionDetailOverlay')) document.getElementById('collectionDetailOverlay').classList.remove('open'); });
-document.getElementById('colDetailBrowseBtn').addEventListener('click', () => { document.getElementById('collectionDetailOverlay').classList.remove('open'); activeFilter = currentCollectionId; renderWorksGrid(); window.switchView('works'); });
-document.getElementById('colDetailPrintBtn').addEventListener('click', () => printContactSheetForCollection(currentCollectionId));
-document.getElementById('colDetailEditBtn').addEventListener('click', () => { document.getElementById('collectionDetailOverlay').classList.remove('open'); openCollectionModal(currentCollectionId); });
-document.getElementById('colDetailDeleteBtn').addEventListener('click', () => { document.getElementById('collectionDetailOverlay').classList.remove('open'); deleteCollection(currentCollectionId); });
-document.getElementById('colDetailExportBtn').addEventListener('click', () => showExportChooser('colDetailExportChooser', 'colDetailExportBtn', (q) => exportZip('collection', currentCollectionId, q)));
-
-// Exhibition export button
-document.getElementById('exDetailExportBtn').addEventListener('click', () => showExportChooser('exDetailExportChooser', 'exDetailExportBtn', (q) => exportZip('exhibition', currentExhibitionId, q)));
 
 // ══════════════════════════════════════════════════════════════
 //  EXPORT SIZE CHOOSER
@@ -1947,6 +1892,7 @@ document.getElementById('exDetailDeleteBtn').addEventListener('click', async()=>
   catch(e){ toast('Delete failed: '+e.message,true); }
 });
 document.getElementById('exDetailPrintBtn').addEventListener('click',()=>printContactSheet(currentExhibitionId));
+document.getElementById('exDetailExportBtn').addEventListener('click', () => showExportChooser('exDetailExportChooser', 'exDetailExportBtn', (q) => exportZip('exhibition', currentExhibitionId, q)));
 
 // ══════════════════════════════════════════════════════════════
 //  EXHIBITION MODAL
