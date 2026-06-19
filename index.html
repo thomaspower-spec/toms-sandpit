@@ -1068,7 +1068,7 @@ async function exportZip(type, id, quality) {
   for (let i = 0; i < groupWorks.length; i++) {
     const w = groupWorks[i];
     const num = String(i + 1).padStart(2, '0');
-    const titleSlug = w.title.replace(/[^a-z0-9]/gi, '-').toLowerCase().replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 30);
+    const titleSlug = w.title.replace(/[^a-z0-9]/gi, '-').toLowerCase().replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 20);
     const images = allImagesFor(w);
     for (let j = 0; j < images.length; j++) {
       let url = images[j];
