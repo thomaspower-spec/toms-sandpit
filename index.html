@@ -1024,13 +1024,13 @@ async function exportZip(type, id, quality) {
     const c = collections.find(x => x.id === id);
     if (!c) return;
     groupWorks = visibleWorks().filter(w => (w.collection_ids || []).includes(c.id));
-    label = c.name.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+    label = c.name.replace(/[^a-z0-9]/gi, '-').toLowerCase().replace(/-+/g, '-').replace(/^-|-$/g, '');
     mdHeader = `# ${c.name}\n${c.description ? c.description + '\n' : ''}\n${groupWorks.length} work${groupWorks.length !== 1 ? 's' : ''}\n\n---\n\n`;
   } else {
     const ex = exhibitions.find(e => e.id === id);
     if (!ex) return;
     groupWorks = (ex.work_ids || []).map(wid => works.find(w => w.id === wid)).filter(Boolean);
-    label = ex.name.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+    label = ex.name.replace(/[^a-z0-9]/gi, '-').toLowerCase().replace(/-+/g, '-').replace(/^-|-$/g, '');
     const start = ex.start_date ? new Date(ex.start_date).toLocaleDateString('en-IE', {day:'numeric',month:'long',year:'numeric'}) : '';
     const end = ex.end_date ? new Date(ex.end_date).toLocaleDateString('en-IE', {day:'numeric',month:'long',year:'numeric'}) : '';
     mdHeader = `# ${ex.name}\n${ex.place ? ex.place + '\n' : ''}${start ? (end && end !== start ? start + ' – ' + end : start) + '\n' : ''}\n${groupWorks.length} work${groupWorks.length !== 1 ? 's' : ''}\n\n---\n\n`;
@@ -1040,10 +1040,13 @@ async function exportZip(type, id, quality) {
 
   toast('Preparing export…');
 
-  const zip = new JSZip();
-  const folder = zip.folder(label);
+  // Prefix applied to every image filename: CK_ + collection/exhibition slug + _
+  const filePrefix = `CK_${label}_`;
 
-  // Build markdown
+  const zip = new JSZip();
+  const folder = zip.folder(`CK_${label}`);
+
+  // Build markdown — saved as !works.md so it sorts to the top in file browsers
   const mdLines = groupWorks.map((w, i) => {
     const num = String(i + 1).padStart(2, '0');
     const colNames = (w.collection_ids || []).map(cid => { const col = getCollection(cid); return col ? col.name : null; }).filter(Boolean);
@@ -1057,21 +1060,22 @@ async function exportZip(type, id, quality) {
     ].filter(Boolean);
     return lines.join('\n');
   });
-  folder.file('works.md', mdHeader + mdLines.join('\n\n') + '\n');
+  folder.file('!works.md', mdHeader + mdLines.join('\n\n') + '\n');
 
   // Fetch and add images
+  // Filename schema: CK_<collection-slug>_<NN>-<work-title-slug>[-<image-index>].jpg
   let fetched = 0;
   for (let i = 0; i < groupWorks.length; i++) {
     const w = groupWorks[i];
     const num = String(i + 1).padStart(2, '0');
-    const safeName = w.title.replace(/[^a-z0-9]/gi, '-').toLowerCase().slice(0, 40);
+    const titleSlug = w.title.replace(/[^a-z0-9]/gi, '-').toLowerCase().replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 30);
     const images = allImagesFor(w);
     for (let j = 0; j < images.length; j++) {
       let url = images[j];
       if (isVideoUrl(url)) continue; // skip videos
       if (isOptimised) url = cloudinaryPrintUrl(url);
       const suffix = images.length > 1 ? `-${j + 1}` : '';
-      const filename = `${num}-${safeName}${suffix}.jpg`;
+      const filename = `${filePrefix}${num}-${titleSlug}${suffix}.jpg`;
       try {
         const resp = await fetch(url);
         if (!resp.ok) throw new Error('fetch failed');
@@ -1090,10 +1094,10 @@ async function exportZip(type, id, quality) {
   const sizeLabel = isOptimised ? '-optimised' : '-full';
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `${label}${sizeLabel}.zip`;
+  a.download = `CK_${label}${sizeLabel}.zip`;
   a.click();
   URL.revokeObjectURL(a.href);
-  toast(`Downloaded — ${fetched} image${fetched !== 1 ? 's' : ''} + works.md`);
+  toast(`Downloaded — ${fetched} image${fetched !== 1 ? 's' : ''} + !works.md`);
 }
 
 // ══════════════════════════════════════════════════════════════
