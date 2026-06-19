@@ -861,7 +861,7 @@ function allImagesFor(w) {
 // Falls back to the original URL unchanged if it's not a Cloudinary URL.
 function cloudinaryPrintUrl(url) {
   if (!url) return url;
-  return url.replace(/\/upload\/(?!w_)/, '/upload/w_900,q_55,f_auto/');
+  return url.replace(/\/upload\/(?!w_)/, '/upload/w_500,q_50,f_auto/');
 }
 
 // ══════════════════════════════════════════════════════════════
