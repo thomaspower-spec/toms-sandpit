@@ -160,16 +160,16 @@
   .exhibition-date { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); white-space: nowrap; }
 
   /* ── BIO ── */
-  .cv-view { max-width: 700px; }
   .cv-text p { font-family: var(--serif); font-size: 1.05rem; font-weight: 300; line-height: 1.75; color: var(--ink); margin: 0 0 1.2rem; }
   .cv-heading { font-family: var(--sans); font-size: 0.72rem; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin: 2.2rem 0 0.9rem; }
   .cv-heading:first-child { margin-top: 0; }
   .cv-year { font-family: var(--sans); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em; color: var(--mid); margin: 1.4rem 0 0.5rem; }
   .cv-exhibition-line { font-family: var(--serif); font-size: 1rem; font-weight: 300; color: var(--ink); margin: 0 0 0.35rem; line-height: 1.5; }
-  .bio-view { display: grid; grid-template-columns: 1fr 320px; gap: 3rem; align-items: start; }
+  .bio-view { display: grid; grid-template-columns: 1.2fr 1fr; gap: 3.5rem; align-items: start; }
   .bio-view .bio-text { font-family: var(--serif); font-size: 1.2rem; font-weight: 300; line-height: 1.75; color: var(--ink); margin-bottom: 2rem; }
   .bio-view .bio-statement { font-family: var(--serif); font-size: 1rem; font-style: italic; line-height: 1.8; color: var(--mid); padding: 1.5rem 2rem; border-left: 2px solid var(--accent); margin-bottom: 2rem; }
-  .bio-image-panel { display: flex; flex-direction: column; gap: 1rem; }
+  .bio-cv-panel { display: flex; flex-direction: column; gap: 0.5rem; }
+  .bio-image-panel { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem; }
   .bio-image-primary { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; background: var(--panel); border-radius: 2px; }
 
   /* ── EMPTY STATE ── */
@@ -379,7 +379,6 @@
       <div class="page-header">
         <h1><small>Artist</small>About</h1>
         <div class="page-actions">
-          <button type="button" id="viewCvBtn" style="background:none;border:none;color:var(--accent);font-family:var(--sans);font-size:0.75rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;padding:0;text-decoration:underline;">CV</button>
           <button class="btn admin-only" id="editBioBtn">Edit</button>
         </div>
       </div>
@@ -388,20 +387,13 @@
           <blockquote class="bio-statement" id="bioStatement">"Artist statement."</blockquote>
           <p class="bio-text" id="bioText">Cerlin is an artist based in Kerry, Ireland.</p>
         </div>
-        <div class="bio-image-panel" id="bioImagePanel" style="display:none;">
-          <img class="bio-image-primary" id="bioImagePrimary" alt="">
+        <div class="bio-cv-panel">
+          <div class="bio-image-panel" id="bioImagePanel" style="display:none;">
+            <img class="bio-image-primary" id="bioImagePrimary" alt="">
+          </div>
+          <div class="cv-text" id="cvText"></div>
+          <div id="cvExhibitions"></div>
         </div>
-      </div>
-    </div>
-
-    <!-- CV -->
-    <div class="view" id="view-cv">
-      <div class="page-header">
-        <h1><small>Curriculum</small>CV</h1>
-      </div>
-      <div class="cv-view">
-        <div class="cv-text" id="cvText"></div>
-        <div id="cvExhibitions"></div>
       </div>
     </div>
   </main>
@@ -2541,13 +2533,11 @@ window.switchView=function(name, resetFilter=false){
   if(name==='works') renderWorksGrid();
   if(name==='collections') renderCollections();
   if(name==='exhibitions') renderExhibitions();
-  if(name==='cv') renderCv();
   document.querySelectorAll('#mobileNav .tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
 };
 
 document.querySelectorAll('header .tab-btn').forEach(b=>{ b.onclick=()=>window.switchView(b.dataset.view, b.dataset.view==='works'); });
 document.querySelectorAll('#mobileNav .tab-btn').forEach(b=>{ b.onclick=()=>window.switchView(b.dataset.view, b.dataset.view==='works'); });
-document.getElementById('viewCvBtn').addEventListener('click', () => window.switchView('cv'));
 
 // ══════════════════════════════════════════════════════════════
 //  MOBILE
@@ -2565,6 +2555,7 @@ function renderAll() {
   document.getElementById('bioText').textContent=bio.text||'';
   document.getElementById('bioStatement').textContent=bio.statement||'';
   renderBioImages();
+  renderCv();
 }
 
 // ── INIT ──
