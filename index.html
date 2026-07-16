@@ -58,6 +58,9 @@
   .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
   select.filter-select { padding: 0.6rem 1rem; background: var(--white); border: 1px solid var(--light); font-family: var(--sans); font-size: 0.8rem; color: var(--mid); border-radius: 2px; outline: none; cursor: pointer; }
+  .search-input { width: 100%; padding: 0.6rem 1rem; background: var(--white); border: 1px solid var(--light); font-family: var(--sans); font-size: 0.85rem; font-weight: 300; color: var(--ink); border-radius: 2px; outline: none; transition: border-color 0.15s; }
+  .search-input:focus { border-color: var(--ink); }
+  .search-input::placeholder { color: var(--light); }
 
   /* ── WORKS GRID — masonry via manual columns ── */
   .works-grid { display: flex; gap: 0.5rem; align-items: flex-start; }
@@ -157,6 +160,12 @@
   .exhibition-date { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); white-space: nowrap; }
 
   /* ── BIO ── */
+  .cv-view { max-width: 700px; }
+  .cv-text p { font-family: var(--serif); font-size: 1.05rem; font-weight: 300; line-height: 1.75; color: var(--ink); margin: 0 0 1.2rem; }
+  .cv-heading { font-family: var(--sans); font-size: 0.72rem; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin: 2.2rem 0 0.9rem; }
+  .cv-heading:first-child { margin-top: 0; }
+  .cv-year { font-family: var(--sans); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em; color: var(--mid); margin: 1.4rem 0 0.5rem; }
+  .cv-exhibition-line { font-family: var(--serif); font-size: 1rem; font-weight: 300; color: var(--ink); margin: 0 0 0.35rem; line-height: 1.5; }
   .bio-view { display: grid; grid-template-columns: 1fr 320px; gap: 3rem; align-items: start; }
   .bio-view .bio-text { font-family: var(--serif); font-size: 1.2rem; font-weight: 300; line-height: 1.75; color: var(--ink); margin-bottom: 2rem; }
   .bio-view .bio-statement { font-family: var(--serif); font-size: 1rem; font-style: italic; line-height: 1.8; color: var(--mid); padding: 1.5rem 2rem; border-left: 2px solid var(--accent); margin-bottom: 2rem; }
@@ -228,7 +237,9 @@
   /* ── PRINT ── */
   @page { size: A4; margin: 1cm; }
   @media print {
-    .shell, #toast, #imgFullscreenOverlay, #imgGridOverlay, #previewBanner { display: none !important; }
+    /* Hide every top-level element except the contact sheet itself, so any
+       overlay/modal left open (e.g. exhibition detail) doesn't bleed into print */
+    body > *:not(#printContactSheet) { display: none !important; }
     #printContactSheet { display: block !important; }
   }
   #printContactSheet { display: none; font-family: var(--sans); color: #1a1814; background: white; }
@@ -311,7 +322,7 @@
     <nav class="header-tabs">
       <button class="tab-btn active" data-view="works">Works</button>
       <button class="tab-btn" data-view="collections">Collections</button>
-      <button class="tab-btn" data-view="exhibitions" style="display:none;">Exhibitions</button>
+      <button class="tab-btn admin-only" data-view="exhibitions">Exhibitions</button>
       <button class="tab-btn" data-view="bio">About</button>
     </nav>
     <button class="mode-badge admin-only" id="adminLogoutBtn">Sign out</button>
@@ -321,7 +332,7 @@
   <nav class="mobile-nav" id="mobileNav" style="display:none;">
     <button class="tab-btn active" data-view="works"><span class="nav-icon">◻</span>Works</button>
     <button class="tab-btn" data-view="collections"><span class="nav-icon">⊞</span>Collections</button>
-    <button class="tab-btn" data-view="exhibitions" style="display:none;"><span class="nav-icon">◈</span>Exhibitions</button>
+    <button class="tab-btn admin-only" data-view="exhibitions"><span class="nav-icon">◈</span>Exhibitions</button>
     <button class="tab-btn" data-view="bio"><span class="nav-icon">◉</span>About</button>
   </nav>
 
@@ -368,17 +379,29 @@
       <div class="page-header">
         <h1><small>Artist</small>About</h1>
         <div class="page-actions">
+          <button type="button" id="viewCvBtn" style="background:none;border:none;color:var(--accent);font-family:var(--sans);font-size:0.75rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;padding:0;text-decoration:underline;">CV</button>
           <button class="btn admin-only" id="editBioBtn">Edit</button>
         </div>
       </div>
       <div class="bio-view">
         <div>
-          <p class="bio-text" id="bioText">Cerlin is an artist based in Kerry, Ireland.</p>
           <blockquote class="bio-statement" id="bioStatement">"Artist statement."</blockquote>
+          <p class="bio-text" id="bioText">Cerlin is an artist based in Kerry, Ireland.</p>
         </div>
         <div class="bio-image-panel" id="bioImagePanel" style="display:none;">
           <img class="bio-image-primary" id="bioImagePrimary" alt="">
         </div>
+      </div>
+    </div>
+
+    <!-- CV -->
+    <div class="view" id="view-cv">
+      <div class="page-header">
+        <h1><small>Curriculum</small>CV</h1>
+      </div>
+      <div class="cv-view">
+        <div class="cv-text" id="cvText"></div>
+        <div id="cvExhibitions"></div>
       </div>
     </div>
   </main>
@@ -420,7 +443,9 @@
       </div>
       <div class="form-group"><label>Year <span style="font-weight:300;text-transform:none;letter-spacing:0;">(auto-fills from date)</span></label><input type="number" id="wYear" placeholder="2024" min="1900" max="2099"></div>
       <div class="form-group"><label>Medium</label><input type="text" id="wMedium" placeholder="e.g. Oil on linen"></div>
-      <div class="form-group"><label>Dimensions</label><input type="text" id="wDimensions" placeholder="e.g. 60 × 80 cm"></div>
+      <div class="form-group"><label>Width <span style="font-weight:300;text-transform:none;letter-spacing:0;">(cm)</span></label><input type="number" id="wWidthCm" placeholder="80" min="0" step="0.1"></div>
+      <div class="form-group"><label>Height <span style="font-weight:300;text-transform:none;letter-spacing:0;">(cm)</span></label><input type="number" id="wHeightCm" placeholder="60" min="0" step="0.1"></div>
+      <div class="form-group form-full"><label>Dimension notes <span style="font-weight:300;text-transform:none;letter-spacing:0;">(for multi-piece, 3D, or irregular work — optional if width/height above cover it)</span></label><input type="text" id="wDimensions" placeholder="e.g. 28 pieces, each 27.5 x 14cm"></div>
       <div class="form-group form-full">
         <label>Visibility</label>
         <select id="wVisibility">
@@ -432,6 +457,10 @@
       <div class="form-group form-full">
         <label>Collections <span style="font-weight:300;text-transform:none;letter-spacing:0;">(select one or more)</span></label>
         <div id="wCollectionsList" style="background:var(--white);border:1px solid var(--light);max-height:120px;overflow-y:auto;padding:0.4rem 0;border-radius:2px;"></div>
+      </div>
+      <div class="form-group form-full">
+        <label>Exhibitions <span style="font-weight:300;text-transform:none;letter-spacing:0;">(select one or more)</span></label>
+        <div id="wExhibitionsList" style="background:var(--white);border:1px solid var(--light);max-height:120px;overflow-y:auto;padding:0.4rem 0;border-radius:2px;"></div>
       </div>
       <div class="form-group form-full"><label>Tags <span style="font-weight:300;text-transform:none;letter-spacing:0;">(comma separated)</span></label><input type="text" id="wTags" placeholder="e.g. abstraction, texture, large-scale"></div>
       <div class="form-group form-full"><label>Description <span style="font-weight:300;text-transform:none;letter-spacing:0;">— public facing</span></label><textarea id="wDesc" placeholder="A short description of this work, visible to everyone…" style="min-height:80px;"></textarea></div>
@@ -481,6 +510,12 @@
           <p style="font-size:0.72rem;color:var(--mid);margin-top:0.5rem;">Anyone with this link can view this collection without logging in.</p>
         </div>
       </div>
+      <!-- Works in this collection — shown only when editing an existing collection -->
+      <div class="form-group form-full" id="cWorksSection" style="display:none;">
+        <label>Works in this Collection</label>
+        <input class="search-input" type="text" id="atcSearch" placeholder="Search works…" style="margin-bottom:0.5rem;">
+        <div id="atcWorksList" style="max-height:280px;overflow-y:auto;border:1px solid var(--light);background:var(--white);border-radius:2px;"></div>
+      </div>
     </div>
     <div class="form-actions">
       <button class="btn" id="cancelCollectionBtn">Cancel</button>
@@ -499,6 +534,7 @@
           <h2 class="detail-title" id="exDetailTitle" style="margin-bottom:0.4rem;"></h2>
           <p id="exDetailMeta" style="font-size:0.8rem;color:var(--mid);"></p>
         </div>
+        <div id="exDetailSizeSummary" class="admin-only" style="font-size:0.72rem;color:var(--mid);text-align:right;line-height:1.6;flex-shrink:0;max-width:280px;"></div>
         <button class="detail-close" id="exDetailClose" style="position:static;background:var(--panel);color:var(--ink);flex-shrink:0;width:32px;height:32px;">✕</button>
       </div>
       <div id="exDetailWorks" style="display:flex;flex-direction:column;gap:0.7rem;max-height:55vh;overflow-y:auto;margin-bottom:1.5rem;"></div>
@@ -519,8 +555,12 @@
     <div class="form-grid">
       <div class="form-group form-full"><label>Exhibition Name *</label><input type="text" id="eName" placeholder="e.g. Between the Lines"></div>
       <div class="form-group form-full"><label>Venue / Place</label><input type="text" id="ePlace" placeholder="e.g. The Model, Sligo"></div>
-      <div class="form-group"><label>Start Date</label><input type="date" id="eStart"></div>
+      <div class="form-group">
+        <label>Start Date <span style="font-weight:300;text-transform:none;letter-spacing:0;">(optional — leave blank if unknown)</span></label>
+        <input type="date" id="eStart">
+      </div>
       <div class="form-group"><label>End Date</label><input type="date" id="eEnd"></div>
+      <div class="form-group"><label>Year <span style="font-weight:300;text-transform:none;letter-spacing:0;">(auto-fills from start date)</span></label><input type="number" id="eYear" placeholder="2015" min="1900" max="2099"></div>
       <div class="form-group form-full">
         <label>Visibility</label>
         <select id="eVisibility">
@@ -530,10 +570,9 @@
         </select>
       </div>
       <div class="form-group form-full">
-        <label>Select Works</label>
-        <input class="search-input" type="text" id="eWorkSearch" placeholder="Search works to add…" style="margin-bottom:0.5rem;">
-        <div id="eWorksList" style="max-height:200px;overflow-y:auto;border:1px solid var(--light);background:var(--white);"></div>
-        <div id="eSelectedWorks" style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.5rem;"></div>
+        <label>Works in this Exhibition</label>
+        <input class="search-input" type="text" id="exwSearch" placeholder="Search works…" style="margin-bottom:0.5rem;">
+        <div id="exwWorksList" style="max-height:280px;overflow-y:auto;border:1px solid var(--light);background:var(--white);border-radius:2px;"></div>
       </div>
     </div>
     <div class="form-actions">
@@ -548,8 +587,9 @@
   <div class="modal">
     <h2>Edit Bio & Statement</h2>
     <div class="form-grid">
-      <div class="form-group form-full"><label>Artist Bio</label><textarea id="editBioText" style="min-height:120px;"></textarea></div>
       <div class="form-group form-full"><label>Artist Statement</label><textarea id="editBioStatement" style="min-height:100px;"></textarea></div>
+      <div class="form-group form-full"><label>Artist Bio</label><textarea id="editBioText" style="min-height:120px;"></textarea></div>
+      <div class="form-group form-full"><label>CV — Education &amp; Awards <span style="font-weight:300;text-transform:none;letter-spacing:0;">(plain text — put section names like EDUCATION or AWARDS in capitals on their own line; exhibitions are added automatically below from the Exhibitions tab)</span></label><textarea id="editBioCv" style="min-height:160px;"></textarea></div>
       <div class="form-group form-full">
         <label>Portrait Images</label>
         <label class="upload-zone">
@@ -595,12 +635,12 @@
 // ══════════════════════════════════════════════════════════════
 
 const CONFIG = {
-  // ⚠ SANDPIT BUILD — reads from production database, deploys to sandpit URL
+  
   SUPABASE_URL: 'https://wowtdwlpatpqjzlqpqcj.supabase.co',
   SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indvd3Rkd2xwYXRwcWp6bHFwcWNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4MTAzMjcsImV4cCI6MjA5MzM4NjMyN30.EA32PGNEmFMesy-Fq3HtKUbZdZ4aPxRSM6L6wLEoXNk',
   CLOUDINARY_CLOUD_NAME: 'dgimf8yud',
   CLOUDINARY_UPLOAD_PRESET: 'material-poetry',
-  SITE_URL: 'https://stupendous-babka-b0c24b.netlify.app',
+  SITE_URL: 'https://material-poetry.netlify.app',
 };
 
 // ══════════════════════════════════════════════════════════════
@@ -681,9 +721,17 @@ async function uploadToCloudinary(file, onProgress) {
 
 let works=[], collections=[], exhibitions=[], bio={text:'',statement:''};
 let activeFilter='all', activeTagFilter=null, activeMediumFilter=null;
+// Feature flag: set to true to re-enable the exhibition size-summary note
+// (longest/shortest side, minimum case dimensions) beside the exhibition title.
+// Temporarily disabled July 2026 — code is untouched, just not rendered.
+const SHOW_EXHIBITION_SIZE_SUMMARY = false;
+
 let editingWorkId=null, editingExhibitionId=null, currentExhibitionId=null;
 let editingCollectionId=null;
-let exhibitionSelectedWorks=[];
+// Tracks which exhibition (if any) to return to when the work detail overlay closes.
+// Reset to null by default inside openDetail(); the exhibition-row click handler
+// sets it explicitly right after calling openDetail() so it isn't wiped by the reset.
+let returnToExhibitionId = null;
 let pendingImageUrls=[];
 let previewToken=null;
 let isPreviewMode=false;
@@ -818,10 +866,16 @@ async function loadAll() {
     [works, collections, exhibitions] = await Promise.all([
       sb.get('works', '?order=work_date.desc.nullslast,year.desc.nullslast,title.asc'),
       sb.get('collections', '?order=name.asc'),
-      sb.get('exhibitions', '?order=start_date.desc')
+      sb.get('exhibitions', '?order=start_date.desc.nullslast,year.desc.nullslast')
     ]);
     const bioRows = await sb.get('bio', '?limit=1');
-    if (bioRows.length) bio = bioRows[0];
+    if (bioRows.length) {
+      bio = bioRows[0];
+      if (typeof bio.image_urls === 'string') {
+        try { bio.image_urls = JSON.parse(bio.image_urls); } catch(e) { bio.image_urls = []; }
+      }
+      if (!Array.isArray(bio.image_urls)) bio.image_urls = [];
+    }
     checkPreviewMode();
     renderAll();
   } catch(e) {
@@ -869,6 +923,25 @@ function cloudinaryPrintUrl(url) {
 // ══════════════════════════════════════════════════════════════
 
 function getCollection(id) { return collections.find(c=>c.id===id); }
+
+// Matches a plain "80 x 60cm" / "110x110cm" style string with nothing extra —
+// used to avoid showing redundant text alongside structured width_cm/height_cm
+const SIMPLE_DIM_PATTERN = /^\s*\d+(?:\.\d+)?\s*(?:cm)?\s*[x×]\s*\d+(?:\.\d+)?\s*(?:cm)?\s*$/i;
+
+// Preferred display string for a work's size: uses structured width_cm/height_cm
+// when present (tidy, consistent formatting), falling back to the free-text
+// dimensions field for legacy/irregular/multi-piece entries. If both exist and
+// the text carries genuine extra information (e.g. "28 pieces, each..."),
+// append it as a note rather than dropping it.
+function displayDimensions(w) {
+  if (w.width_cm != null && w.height_cm != null) {
+    const base = `${w.width_cm} × ${w.height_cm}cm`;
+    const text = (w.dimensions || '').trim();
+    const note = text && !SIMPLE_DIM_PATTERN.test(text) ? text : '';
+    return note ? `${base} — ${note}` : base;
+  }
+  return w.dimensions || '';
+}
 function getAllTags() { const s=new Set(); visibleWorks().forEach(w=>(w.tags||[]).forEach(t=>s.add(t))); return [...s].sort(); }
 function getAllMediums() { const s=new Set(); visibleWorks().forEach(w=>{if(w.medium)s.add(w.medium.split(' ')[0]);}); return [...s].sort(); }
 function getAllYears() { const s=new Set(); visibleWorks().forEach(w=>{if(w.year)s.add(w.year);}); return [...s].sort((a,b)=>b-a); }
@@ -1031,9 +1104,8 @@ async function exportZip(type, id, quality) {
     if (!ex) return;
     groupWorks = (ex.work_ids || []).map(wid => works.find(w => w.id === wid)).filter(Boolean);
     label = ex.name.replace(/[^a-z0-9]/gi, '-').toLowerCase().replace(/-+/g, '-').replace(/^-|-$/g, '');
-    const start = ex.start_date ? new Date(ex.start_date).toLocaleDateString('en-IE', {day:'numeric',month:'long',year:'numeric'}) : '';
-    const end = ex.end_date ? new Date(ex.end_date).toLocaleDateString('en-IE', {day:'numeric',month:'long',year:'numeric'}) : '';
-    mdHeader = `# ${ex.name}\n${ex.place ? ex.place + '\n' : ''}${start ? (end && end !== start ? start + ' – ' + end : start) + '\n' : ''}\n${groupWorks.length} work${groupWorks.length !== 1 ? 's' : ''}\n\n---\n\n`;
+    const dateStr = exhibitionDateLabel(ex, true);
+    mdHeader = `# ${ex.name}\n${ex.place ? ex.place + '\n' : ''}${dateStr ? dateStr + '\n' : ''}\n${groupWorks.length} work${groupWorks.length !== 1 ? 's' : ''}\n\n---\n\n`;
   }
 
   if (!groupWorks.length) { toast('No works to export', true); return; }
@@ -1046,36 +1118,43 @@ async function exportZip(type, id, quality) {
   const zip = new JSZip();
   const folder = zip.folder(`CK_${label}`);
 
-  // Build markdown — saved as !works.md so it sorts to the top in file browsers
-  const mdLines = groupWorks.map((w, i) => {
+  // Precompute filenames per work first (deterministic from the schema —
+  // doesn't require the images to be fetched) so the markdown can list them.
+  const workFiles = groupWorks.map((w, i) => {
     const num = String(i + 1).padStart(2, '0');
+    const titleSlug = w.title.replace(/[^a-z0-9]/gi, '-').toLowerCase().replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 20);
+    const images = allImagesFor(w).filter(url => !isVideoUrl(url));
+    const filenames = images.map((url, j) => {
+      const suffix = images.length > 1 ? `-${j + 1}` : '';
+      return `${filePrefix}${num}-${titleSlug}${suffix}.jpg`;
+    });
+    return { work: w, num, titleSlug, images, filenames };
+  });
+
+  // Build markdown — saved as !works.md so it sorts to the top in file browsers
+  const mdLines = workFiles.map(({ work: w, num, filenames }) => {
     const colNames = (w.collection_ids || []).map(cid => { const col = getCollection(cid); return col ? col.name : null; }).filter(Boolean);
     const lines = [
       `## ${num}. ${w.title}`,
       w.year         ? `Year: ${w.year}` : '',
       w.medium       ? `Medium: ${w.medium}` : '',
-      w.dimensions   ? `Dimensions: ${w.dimensions}` : '',
+      displayDimensions(w) ? `Dimensions: ${displayDimensions(w)}` : '',
       colNames.length ? `Collection: ${colNames.join(', ')}` : '',
+      filenames.length ? `File(s):\n${filenames.map(f => `- ${f}`).join('\n')}` : '',
       w.description  ? `\n${w.description}` : '',
     ].filter(Boolean);
     return lines.join('\n');
   });
   folder.file('!works.md', mdHeader + mdLines.join('\n\n') + '\n');
 
-  // Fetch and add images
-  // Filename schema: CK_<collection-slug>_<NN>-<work-title-slug>[-<image-index>].jpg
+  // Fetch and add images, using the filenames already computed above
   let fetched = 0;
-  for (let i = 0; i < groupWorks.length; i++) {
-    const w = groupWorks[i];
-    const num = String(i + 1).padStart(2, '0');
-    const titleSlug = w.title.replace(/[^a-z0-9]/gi, '-').toLowerCase().replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 20);
-    const images = allImagesFor(w);
+  for (let i = 0; i < workFiles.length; i++) {
+    const { work: w, images, filenames } = workFiles[i];
     for (let j = 0; j < images.length; j++) {
       let url = images[j];
-      if (isVideoUrl(url)) continue; // skip videos
       if (isOptimised) url = cloudinaryPrintUrl(url);
-      const suffix = images.length > 1 ? `-${j + 1}` : '';
-      const filename = `${filePrefix}${num}-${titleSlug}${suffix}.jpg`;
+      const filename = filenames[j];
       try {
         const resp = await fetch(url);
         if (!resp.ok) throw new Error('fetch failed');
@@ -1086,7 +1165,7 @@ async function exportZip(type, id, quality) {
         console.warn('Could not fetch image for', w.title, e);
       }
     }
-    toast(`Fetching images… ${i + 1} / ${groupWorks.length}`);
+    toast(`Fetching images… ${i + 1} / ${workFiles.length}`);
   }
 
   toast('Building zip…');
@@ -1104,6 +1183,98 @@ async function exportZip(type, id, quality) {
 //  EXHIBITIONS
 // ══════════════════════════════════════════════════════════════
 
+// Sort key: prefer exact start_date, fall back to year-as-Jan-1 so year-only
+// entries still sort correctly alongside dated ones (most recent first)
+function exhibitionSortKey(ex) {
+  if (ex.start_date) return ex.start_date;
+  if (ex.year) return `${ex.year}-01-01`;
+  return '';
+}
+
+// Display label: exact date range if known, otherwise just the year, otherwise blank
+function exhibitionDateLabel(ex, longForm=false) {
+  const opts = longForm ? {day:'numeric',month:'long',year:'numeric'} : {month:'short',year:'numeric'};
+  if (ex.start_date) {
+    const start = new Date(ex.start_date).toLocaleDateString('en-IE', opts);
+    const end = ex.end_date ? new Date(ex.end_date).toLocaleDateString('en-IE', opts) : '';
+    return end && end !== start ? `${start} – ${end}` : start;
+  }
+  if (ex.year) return String(ex.year);
+  return '';
+}
+
+// ── Portfolio-case sizing (admin-only note on the exhibition detail overlay) ──
+
+// A0 down to A4, long/short sides in mm — used to find the smallest standard
+// folio size that could fit every work in an exhibition
+const FOLIO_SIZES = [
+  { name: 'A4', long: 297,  short: 210 },
+  { name: 'A3', long: 420,  short: 297 },
+  { name: 'A2', long: 594,  short: 420 },
+  { name: 'A1', long: 841,  short: 594 },
+  { name: 'A0', long: 1189, short: 841 },
+];
+
+function minimumFolioSize(longMm, shortMm) {
+  for (const size of FOLIO_SIZES) {
+    if (size.long >= longMm && size.short >= shortMm) return size;
+  }
+  return { name: 'Larger than A0', long: null, short: null };
+}
+
+// A work's long/short side in cm, whichever way round they were entered.
+// Prefers the structured width_cm/height_cm fields; falls back to parsing the
+// free-text dimensions field (for works entered before that field existed, or
+// where a simple pair can still be extracted despite extra wording)
+function workSizeCm(w) {
+  if (w.width_cm != null && w.height_cm != null) {
+    return { long: Math.max(w.width_cm, w.height_cm), short: Math.min(w.width_cm, w.height_cm) };
+  }
+  const text = (w.dimensions || '').trim();
+  const m = text.match(/(\d+(?:\.\d+)?)\s*(?:cm)?\s*[x×]\s*(\d+(?:\.\d+)?)/i);
+  if (!m) return null;
+  const a = parseFloat(m[1]), b = parseFloat(m[2]);
+  return { long: Math.max(a, b), short: Math.min(a, b) };
+}
+
+// Largest long/short side across an exhibition's works, which works, and the
+// smallest standard folio size that would fit all of them
+function exhibitionSizeSummary(exWorks) {
+  let maxLong = null, maxLongWork = null, maxShort = null, maxShortWork = null, missingCount = 0;
+  exWorks.forEach(w => {
+    const size = workSizeCm(w);
+    if (!size) { missingCount++; return; }
+    if (maxLong === null || size.long > maxLong) { maxLong = size.long; maxLongWork = w; }
+    if (maxShort === null || size.short > maxShort) { maxShort = size.short; maxShortWork = w; }
+  });
+  if (maxLong === null) return { missingCount, maxLong: null };
+  return {
+    maxLong, maxLongWork, maxShort, maxShortWork, missingCount,
+    folio: minimumFolioSize(maxLong * 10, maxShort * 10)
+  };
+}
+
+function renderExDetailSizeSummary(exWorks) {
+  const el = document.getElementById('exDetailSizeSummary');
+  const s = exhibitionSizeSummary(exWorks);
+  if (s.maxLong === null) {
+    el.innerHTML = s.missingCount ? `<span style="font-style:italic;">No dimensions recorded yet</span>` : '';
+    return;
+  }
+  // Both figures are always shown, even when the same work happens to have
+  // both the largest long side and largest short side — each is a separate
+  // measurement needed for a case/box, regardless of which work it came from
+  const folioLabel = s.folio.long
+    ? `fits in ${s.folio.name}, ${(s.folio.long/10).toFixed(1)} × ${(s.folio.short/10).toFixed(1)}cm`
+    : s.folio.name;
+  el.innerHTML =
+    `Longest side: <strong>${s.maxLong}cm</strong> <span style="font-style:italic;">(${s.maxLongWork.title})</span>` +
+    `<br>Shortest side needed: <strong>${s.maxShort}cm</strong> <span style="font-style:italic;">(${s.maxShortWork.title})</span>` +
+    `<br>Minimum case dimensions: <strong>${s.maxLong} × ${s.maxShort}cm</strong>` +
+    `<br><span style="font-style:italic;white-space:nowrap;">(${folioLabel})</span>` +
+    (s.missingCount ? `<br><span style="font-style:italic;">${s.missingCount} work${s.missingCount!==1?'s':''} missing dimensions</span>` : '');
+}
+
 function renderExhibitions() {
   const list=document.getElementById('exhibitionsList');
   // Filter by visibility based on access level
@@ -1112,15 +1283,14 @@ function renderExhibitions() {
     : exhibitions.filter(ex => ex.visibility === 'published' || !ex.visibility);
   if(!visibleExhibitions.length){list.innerHTML=`<div class="empty-state"><div class="empty-icon">◻</div><p>No exhibitions yet.</p></div>`;return;}
   list.innerHTML='';
-  [...visibleExhibitions].sort((a,b)=>(b.start_date||'').localeCompare(a.start_date||'')).forEach(ex=>{
+  [...visibleExhibitions].sort((a,b)=>exhibitionSortKey(b).localeCompare(exhibitionSortKey(a))).forEach(ex=>{
     const card=document.createElement('div');
     card.className='exhibition-card';
-    const start=ex.start_date?new Date(ex.start_date).toLocaleDateString('en-IE',{month:'short',year:'numeric'}):'';
-    const end=ex.end_date?new Date(ex.end_date).toLocaleDateString('en-IE',{month:'short',year:'numeric'}):'';
+    const dateLabel=exhibitionDateLabel(ex);
     const wCount=(ex.work_ids||[]).length;
     const badge=isAdmin()&&ex.visibility&&ex.visibility!=='published'
       ?`<span class="visibility-badge badge-${ex.visibility}" style="margin-left:0.5rem;vertical-align:middle;">${ex.visibility}</span>`:'';
-    card.innerHTML=`<div><h3>${ex.name}${badge}</h3><p>${ex.place||''}${wCount?' · '+wCount+' work'+(wCount!==1?'s':''):''}</p></div><div class="exhibition-date">${start}${end&&end!==start?' – '+end:''}</div>`;
+    card.innerHTML=`<div><h3>${ex.name}${badge}</h3><p>${ex.place||''}${wCount?' · '+wCount+' work'+(wCount!==1?'s':''):''}</p></div><div class="exhibition-date">${dateLabel}</div>`;
     card.addEventListener('click',()=>openExhibitionDetail(ex.id));
     list.appendChild(card);
   });
@@ -1154,7 +1324,7 @@ function renderTimeline() {
     byYear[y].forEach(w=>{
       const item=document.createElement('div');
       item.className='timeline-item';
-      item.innerHTML=`<img src="${thumbFor(w,160,120)}" style="width:80px;height:60px;object-fit:cover;flex-shrink:0;" alt="${w.title}"><div class="timeline-text"><h4>${w.title}</h4><p>${w.medium||''}${w.dimensions?' · '+w.dimensions:''}</p></div>`;
+      item.innerHTML=`<img src="${thumbFor(w,160,120)}" style="width:80px;height:60px;object-fit:cover;flex-shrink:0;" alt="${w.title}"><div class="timeline-text"><h4>${w.title}</h4><p>${w.medium||''}${displayDimensions(w)?' · '+displayDimensions(w):''}</p></div>`;
       item.addEventListener('click',()=>openDetail(w.id));
       wd.appendChild(item);
     });
@@ -1502,6 +1672,7 @@ function openDetail(id) {
   const w = works.find(x => x.id === id);
   if (!w) return;
   editingWorkId = id;
+  returnToExhibitionId = null;
   carouselImages = allImagesFor(w);
   if (!carouselImages.length) carouselImages = [makePlaceholderSrc(id, 600, 500)];
   carouselIndex = 0;
@@ -1513,7 +1684,7 @@ function openDetail(id) {
     ? new Date(w.work_date).toLocaleDateString('en-IE', {day:'numeric', month:'long', year:'numeric'})
     : (w.year || '—');
   document.getElementById('detailMedium').textContent = w.medium || '—';
-  document.getElementById('detailDimensions').textContent = w.dimensions || '—';
+  document.getElementById('detailDimensions').textContent = displayDimensions(w) || '—';
   const colNames = (w.collection_ids||[]).map(id=>getCollection(id)).filter(Boolean).map(c=>c.name);
   document.getElementById('detailCollection').textContent = colNames.length ? colNames.join(', ') : '—';
   document.getElementById('detailTags').textContent = (w.tags||[]).length ? w.tags.join(', ') : '—';
@@ -1526,6 +1697,7 @@ document.getElementById('detailOverlay').addEventListener('click', e=>{
   if(e.target===document.getElementById('detailOverlay')||e.target.id==='detailClose') {
     document.getElementById('detailOverlay').classList.remove('open');
     loupeEnabled = false;
+    if (returnToExhibitionId) { const exId = returnToExhibitionId; returnToExhibitionId = null; openExhibitionDetail(exId); }
   }
 });
 
@@ -1540,7 +1712,11 @@ document.addEventListener('keydown', e => {
   if (!document.getElementById('detailOverlay').classList.contains('open')) return;
   if (e.key === 'ArrowLeft' && carouselImages.length > 1) { carouselIndex = (carouselIndex - 1 + carouselImages.length) % carouselImages.length; renderCarousel(); }
   if (e.key === 'ArrowRight' && carouselImages.length > 1) { carouselIndex = (carouselIndex + 1) % carouselImages.length; renderCarousel(); }
-  if (e.key === 'Escape') { document.getElementById('detailOverlay').classList.remove('open'); loupeEnabled = false; }
+  if (e.key === 'Escape') {
+    document.getElementById('detailOverlay').classList.remove('open');
+    loupeEnabled = false;
+    if (returnToExhibitionId) { const exId = returnToExhibitionId; returnToExhibitionId = null; openExhibitionDetail(exId); }
+  }
 });
 document.getElementById('editWorkBtn').addEventListener('click',()=>{ document.getElementById('detailOverlay').classList.remove('open'); openWorkModal(editingWorkId); });
 document.getElementById('deleteWorkBtn').addEventListener('click', async()=>{
@@ -1549,7 +1725,9 @@ document.getElementById('deleteWorkBtn').addEventListener('click', async()=>{
     await sb.safeDelete('works',editingWorkId);
     works=works.filter(w=>w.id!==editingWorkId);
     document.getElementById('detailOverlay').classList.remove('open');
-    renderAll(); toast('Work deleted');
+    renderAll();
+    if (returnToExhibitionId) { const exId = returnToExhibitionId; returnToExhibitionId = null; openExhibitionDetail(exId); }
+    toast('Work deleted');
   } catch(e){ toast('Delete failed: '+e.message,true); }
 });
 
@@ -1564,6 +1742,24 @@ function renderCollectionCheckboxes(selectedIds) {
 }
 
 function getSelectedCollections() { return Array.from(document.querySelectorAll('#wCollectionsList input[type=checkbox]:checked')).map(cb=>cb.value); }
+
+// Exhibition membership lives on the exhibition record (work_ids[]), not on the work,
+// so this list is derived rather than read straight off the work
+function exhibitionsForWork(workId) {
+  return exhibitions.filter(ex => (ex.work_ids||[]).includes(workId)).map(ex => ex.id);
+}
+
+function renderExhibitionCheckboxes(selectedIds) {
+  const container=document.getElementById('wExhibitionsList');
+  if(!exhibitions.length){container.innerHTML='<div style="padding:0.5rem 0.8rem;font-size:0.8rem;color:var(--mid);">No exhibitions yet.</div>';return;}
+  container.innerHTML=exhibitions.map(ex=>`<label style="display:flex;align-items:center;gap:0.6rem;padding:0.4rem 0.8rem;cursor:pointer;font-size:0.82rem;" onmouseover="this.style.background='var(--panel)'" onmouseout="this.style.background=''"><input type="checkbox" value="${ex.id}" ${(selectedIds||[]).includes(ex.id)?'checked':''} style="accent-color:var(--accent);width:14px;height:14px;"> ${ex.name}</label>`).join('');
+}
+
+function getSelectedExhibitions() { return Array.from(document.querySelectorAll('#wExhibitionsList input[type=checkbox]:checked')).map(cb=>cb.value); }
+
+// Snapshot of which exhibitions this work belonged to when the modal opened —
+// used to diff against the selection on save (mirrors atcOriginalIds/atcSelectedIds)
+let workOriginalExhibitionIds = new Set();
 
 // Renders existing image previews with ✕ remove buttons
 // existingUrls is the current saved list; pendingImageUrls holds newly uploaded ones
@@ -1670,7 +1866,7 @@ function renderUploadPreviews() {
   });
 }
 
-function openWorkModal(id) {
+function openWorkModal(id, preselectedCollectionId) {
   editingWorkId=id||null;
   pendingImageUrls=[];
   existingImageUrls=[];
@@ -1683,9 +1879,13 @@ function openWorkModal(id) {
     document.getElementById('wDate').value=w.work_date||'';
     document.getElementById('wYear').value=w.year||'';
     document.getElementById('wMedium').value=w.medium||'';
+    document.getElementById('wWidthCm').value=w.width_cm||'';
+    document.getElementById('wHeightCm').value=w.height_cm||'';
     document.getElementById('wDimensions').value=w.dimensions||'';
     document.getElementById('wVisibility').value=w.visibility||'draft';
     renderCollectionCheckboxes(w.collection_ids||[]);
+    workOriginalExhibitionIds = new Set(exhibitionsForWork(id));
+    renderExhibitionCheckboxes([...workOriginalExhibitionIds]);
     document.getElementById('wTags').value=(w.tags||[]).join(', ');
     document.getElementById('wDesc').value=w.description||'';
     document.getElementById('wNotes').value=w.notes||'';
@@ -1695,9 +1895,13 @@ function openWorkModal(id) {
     document.getElementById('wDate').value='';
     document.getElementById('wYear').value='';
     document.getElementById('wMedium').value='';
+    document.getElementById('wWidthCm').value='';
+    document.getElementById('wHeightCm').value='';
     document.getElementById('wDimensions').value='';
     document.getElementById('wVisibility').value='draft';
-    renderCollectionCheckboxes([]);
+    renderCollectionCheckboxes(preselectedCollectionId ? [preselectedCollectionId] : []);
+    workOriginalExhibitionIds = new Set();
+    renderExhibitionCheckboxes([]);
     document.getElementById('wTags').value='';
     document.getElementById('wDesc').value='';
     document.getElementById('wNotes').value='';
@@ -1706,13 +1910,123 @@ function openWorkModal(id) {
   document.getElementById('workModal').classList.add('open');
 }
 
-document.getElementById('addWorkBtn').addEventListener('click',()=>openWorkModal(null));
+document.getElementById('addWorkBtn').addEventListener('click', () => {
+  if (activeFilter !== 'all') {
+    openWorkModal(null, activeFilter);
+  } else {
+    openWorkModal(null);
+  }
+});
+
+// ── Works checklist — shared by the collection edit modal ──
+let atcCollectionId = null;
+let atcSelectedIds = new Set();
+let atcOriginalIds = new Set();
+
+function renderAtcList(query) {
+  const container = document.getElementById('atcWorksList');
+  const candidates = works.filter(w => !query || w.title.toLowerCase().includes(query));
+  if (!candidates.length) {
+    container.innerHTML = `<div style="padding:0.8rem;font-size:0.82rem;color:var(--mid);font-style:italic;">No works found.</div>`;
+    return;
+  }
+  // Already-in-collection works first, then the rest — both alphabetised
+  const inCollection = candidates.filter(w => atcOriginalIds.has(w.id)).sort((a,b)=>a.title.localeCompare(b.title));
+  const notInCollection = candidates.filter(w => !atcOriginalIds.has(w.id)).sort((a,b)=>a.title.localeCompare(b.title));
+  const ordered = [...inCollection, ...notInCollection];
+  container.innerHTML = '';
+  ordered.forEach((w, i) => {
+    // Divider between "in collection" and "not in collection" groups
+    if (i === inCollection.length && inCollection.length && notInCollection.length) {
+      const divider = document.createElement('div');
+      divider.style.cssText = 'padding:0.4rem 0.8rem;font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--light);background:var(--cream);border-bottom:1px solid var(--panel);';
+      divider.textContent = 'Other works';
+      container.appendChild(divider);
+    }
+    const row = document.createElement('label');
+    row.style.cssText = 'display:grid;grid-template-columns:24px 56px 1fr;gap:0.7rem;align-items:center;padding:0.55rem 0.8rem;cursor:pointer;border-bottom:1px solid var(--panel);';
+    row.onmouseover = () => row.style.background = 'var(--panel)';
+    row.onmouseout = () => row.style.background = '';
+    const checked = atcSelectedIds.has(w.id) ? 'checked' : '';
+    row.innerHTML = `
+      <input type="checkbox" value="${w.id}" ${checked} style="accent-color:var(--accent);width:15px;height:15px;">
+      <img src="${thumbFor(w, 112, 84)}" style="width:56px;height:42px;object-fit:cover;" alt="">
+      <div>
+        <div style="font-family:var(--serif);font-style:italic;font-size:0.92rem;">${w.title}</div>
+        <div style="font-size:0.72rem;color:var(--mid);">${w.year||''}${w.medium?' · '+w.medium:''}</div>
+      </div>`;
+    row.querySelector('input').addEventListener('change', function() {
+      if (this.checked) atcSelectedIds.add(w.id);
+      else atcSelectedIds.delete(w.id);
+    });
+    container.appendChild(row);
+  });
+}
+
+document.getElementById('atcSearch').addEventListener('input', function() { renderAtcList(this.value.toLowerCase()); });
+
+// Persists any changes to collection membership (called from saveCollectionBtn)
+async function saveWorksMembership() {
+  if (!atcCollectionId) return { added: 0, removed: 0 };
+  const toAdd = [...atcSelectedIds].filter(id => !atcOriginalIds.has(id));
+  const toRemove = [...atcOriginalIds].filter(id => !atcSelectedIds.has(id));
+  for (const wid of toAdd) {
+    const w = works.find(x => x.id === wid);
+    if (!w) continue;
+    const newIds = [...new Set([...(w.collection_ids || []), atcCollectionId])];
+    const updated = await sb.safePatch('works', wid, { collection_ids: newIds });
+    const idx = works.findIndex(x => x.id === wid);
+    works[idx] = updated[0] || { ...w, collection_ids: newIds };
+  }
+  for (const wid of toRemove) {
+    const w = works.find(x => x.id === wid);
+    if (!w) continue;
+    const newIds = (w.collection_ids || []).filter(cid => cid !== atcCollectionId);
+    const updated = await sb.safePatch('works', wid, { collection_ids: newIds });
+    const idx = works.findIndex(x => x.id === wid);
+    works[idx] = updated[0] || { ...w, collection_ids: newIds };
+  }
+  return { added: toAdd.length, removed: toRemove.length };
+}
+
+// Reverse of saveWorksMembership: this work's exhibition membership is diffed
+// against the original snapshot, and each affected exhibition record is patched
+// (since exhibition.work_ids is the source of truth, not a field on the work itself)
+async function saveWorkExhibitionMembership(workId) {
+  const selected = new Set(getSelectedExhibitions());
+  const toAdd = [...selected].filter(id => !workOriginalExhibitionIds.has(id));
+  const toRemove = [...workOriginalExhibitionIds].filter(id => !selected.has(id));
+  for (const exId of toAdd) {
+    const ex = exhibitions.find(x => x.id === exId);
+    if (!ex) continue;
+    const newIds = [...new Set([...(ex.work_ids || []), workId])];
+    const updated = await sb.safePatch('exhibitions', exId, { work_ids: newIds });
+    const idx = exhibitions.findIndex(x => x.id === exId);
+    exhibitions[idx] = updated[0] || { ...ex, work_ids: newIds };
+  }
+  for (const exId of toRemove) {
+    const ex = exhibitions.find(x => x.id === exId);
+    if (!ex) continue;
+    const newIds = (ex.work_ids || []).filter(wid => wid !== workId);
+    const updated = await sb.safePatch('exhibitions', exId, { work_ids: newIds });
+    const idx = exhibitions.findIndex(x => x.id === exId);
+    exhibitions[idx] = updated[0] || { ...ex, work_ids: newIds };
+  }
+  return { added: toAdd.length, removed: toRemove.length };
+}
+
 document.getElementById('viewAllFromModalBtn').addEventListener('click', e => { e.preventDefault(); openImgGridOverlay('upload'); });
-document.getElementById('cancelWorkBtn').addEventListener('click',()=>document.getElementById('workModal').classList.remove('open'));
+document.getElementById('cancelWorkBtn').addEventListener('click',()=>{
+  document.getElementById('workModal').classList.remove('open');
+  if (returnToExhibitionId) { const exId = returnToExhibitionId; returnToExhibitionId = null; openExhibitionDetail(exId); }
+});
 
 // Auto-fill year from date picker
 document.getElementById('wDate').addEventListener('change', function() {
   if (this.value) document.getElementById('wYear').value = new Date(this.value).getFullYear();
+});
+document.getElementById('eStart').addEventListener('change', function() {
+  if (this.value) document.getElementById('eYear').value = new Date(this.value).getFullYear();
 });
 
 document.getElementById('wFile').addEventListener('change', async function() {
@@ -1747,6 +2061,8 @@ document.getElementById('saveWorkBtn').addEventListener('click', async()=>{
     work_date:document.getElementById('wDate').value||null,
     medium:document.getElementById('wMedium').value.trim(),
     dimensions:document.getElementById('wDimensions').value.trim(),
+    width_cm:parseFloat(document.getElementById('wWidthCm').value)||null,
+    height_cm:parseFloat(document.getElementById('wHeightCm').value)||null,
     visibility:document.getElementById('wVisibility').value,
     collection_ids:getSelectedCollections(),
     tags:document.getElementById('wTags').value.split(',').map(t=>t.trim()).filter(Boolean),
@@ -1755,17 +2071,26 @@ document.getElementById('saveWorkBtn').addEventListener('click', async()=>{
     image_urls:finalImages
   };
   try {
+    let workId = editingWorkId;
     if(editingWorkId){
       const updated=await sb.safePatch('works',editingWorkId,data);
       const idx=works.findIndex(w=>w.id===editingWorkId);
       works[idx]=updated[0]||{...works[idx],...data};
     } else {
       const created=await sb.safePost('works',data);
-      works.push(created[0]||{id:uid(),...data});
+      const newWork=created[0]||{id:uid(),...data};
+      works.push(newWork);
+      workId=newWork.id;
     }
+    const membership = await saveWorkExhibitionMembership(workId);
     pendingImageUrls=[]; existingImageUrls=[];
     document.getElementById('workModal').classList.remove('open');
-    renderAll(); toast(editingWorkId?'Work updated':'Work added');
+    renderAll();
+    if (returnToExhibitionId) { const exId = returnToExhibitionId; returnToExhibitionId = null; openExhibitionDetail(exId); }
+    const parts=[editingWorkId?'Work updated':'Work added'];
+    if(membership.added) parts.push(`${membership.added} exhibition${membership.added!==1?'s':''} added`);
+    if(membership.removed) parts.push(`${membership.removed} exhibition${membership.removed!==1?'s':''} removed`);
+    toast(parts.join(' · '));
   } catch(e){ toast('Save failed: '+e.message,true); }
   finally{ btn.textContent='Save Work'; btn.disabled=false; }
 });
@@ -1784,11 +2109,23 @@ function openCollectionModal(id) {
     document.getElementById('cDesc').value=c.description||'';
     document.getElementById('cVisibility').value=c.visibility||'published';
     updateCollectionShareBox(c);
+    // Show and populate the works checklist for an existing collection
+    document.getElementById('cWorksSection').style.display='block';
+    document.getElementById('atcSearch').value='';
+    atcCollectionId = id;
+    atcOriginalIds = new Set(works.filter(w => (w.collection_ids||[]).includes(id)).map(w => w.id));
+    atcSelectedIds = new Set(atcOriginalIds);
+    renderAtcList('');
   } else {
     document.getElementById('cName').value='';
     document.getElementById('cDesc').value='';
     document.getElementById('cVisibility').value='published';
     document.getElementById('cShareBox').style.display='none';
+    // No works section for a brand new collection — nothing to assign yet
+    document.getElementById('cWorksSection').style.display='none';
+    atcCollectionId = null;
+    atcOriginalIds = new Set();
+    atcSelectedIds = new Set();
   }
   document.getElementById('collectionModal').classList.add('open');
 }
@@ -1851,8 +2188,13 @@ document.getElementById('saveCollectionBtn').addEventListener('click', async()=>
       const created=await sb.safePost('collections',data);
       collections.push(created[0]||{id:uid(),...data});
     }
+    const membership = await saveWorksMembership();
     document.getElementById('collectionModal').classList.remove('open');
-    renderAll(); toast(editingCollectionId?'Collection updated':'Collection created');
+    renderAll();
+    const parts=[editingCollectionId?'Collection updated':'Collection created'];
+    if(membership.added) parts.push(`${membership.added} work${membership.added!==1?'s':''} added`);
+    if(membership.removed) parts.push(`${membership.removed} work${membership.removed!==1?'s':''} removed`);
+    toast(parts.join(' · '));
   } catch(e){ toast('Save failed: '+e.message,true); }
   finally{ btn.textContent='Save Collection'; btn.disabled=false; }
 });
@@ -1866,12 +2208,11 @@ function openExhibitionDetail(id) {
   if(!ex) return;
   currentExhibitionId=id;
   document.getElementById('exDetailTitle').textContent=ex.name;
-  const start=ex.start_date?new Date(ex.start_date).toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'}):'';
-  const end=ex.end_date?new Date(ex.end_date).toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'}):'';
-  document.getElementById('exDetailMeta').textContent=[ex.place,start&&end&&end!==start?`${start} – ${end}`:start].filter(Boolean).join(' · ');
+  document.getElementById('exDetailMeta').textContent=[ex.place,exhibitionDateLabel(ex,true)].filter(Boolean).join(' · ');
   const worksContainer=document.getElementById('exDetailWorks');
   worksContainer.innerHTML='';
   const exWorks=(ex.work_ids||[]).map(wid=>works.find(w=>w.id===wid)).filter(Boolean);
+  if (SHOW_EXHIBITION_SIZE_SUMMARY) { renderExDetailSizeSummary(exWorks); } else { document.getElementById('exDetailSizeSummary').innerHTML=''; }
   if(!exWorks.length){ worksContainer.innerHTML=`<p style="font-size:0.85rem;color:var(--mid);font-style:italic;padding:1rem 0;">No works associated.</p>`; }
   else {
     exWorks.forEach(w=>{
@@ -1879,8 +2220,8 @@ function openExhibitionDetail(id) {
       row.style.cssText='display:grid;grid-template-columns:72px 1fr;gap:0.9rem;align-items:center;padding:0.7rem;background:var(--panel);border-radius:2px;cursor:pointer;transition:background 0.12s;';
       row.onmouseover=()=>row.style.background='#e8e3db';
       row.onmouseout=()=>row.style.background='var(--panel)';
-      row.innerHTML=`<img src="${thumbFor(w,144,108)}" style="width:72px;height:54px;object-fit:cover;" alt="${w.title}"><div><div style="font-family:var(--serif);font-style:italic;font-size:1rem;margin-bottom:0.2rem;">${w.title}</div><div style="font-size:0.75rem;color:var(--mid);">${w.year||''}${w.medium?' · '+w.medium:''}${w.dimensions?' · '+w.dimensions:''}</div>${w.notes&&isAdmin()?`<div style="font-size:0.72rem;color:var(--accent);margin-top:0.2rem;font-style:italic;">${w.notes}</div>`:''}</div>`;
-      row.addEventListener('click',()=>{ document.getElementById('exhibitionDetailOverlay').classList.remove('open'); openDetail(w.id); });
+      row.innerHTML=`<img src="${thumbFor(w,144,108)}" style="width:72px;height:54px;object-fit:cover;" alt="${w.title}"><div><div style="font-family:var(--serif);font-style:italic;font-size:1rem;margin-bottom:0.2rem;">${w.title}</div><div style="font-size:0.75rem;color:var(--mid);">${w.year||''}${w.medium?' · '+w.medium:''}${displayDimensions(w)?' · '+displayDimensions(w):''}</div>${w.notes&&isAdmin()?`<div style="font-size:0.72rem;color:var(--accent);margin-top:0.2rem;font-style:italic;">${w.notes}</div>`:''}</div>`;
+      row.addEventListener('click',()=>{ document.getElementById('exhibitionDetailOverlay').classList.remove('open'); const exId=currentExhibitionId; openDetail(w.id); returnToExhibitionId=exId; });
       worksContainer.appendChild(row);
     });
   }
@@ -1904,28 +2245,72 @@ document.getElementById('exDetailExportBtn').addEventListener('click', () => sho
 
 function openExhibitionModal(id) {
   editingExhibitionId=id||null;
-  exhibitionSelectedWorks=[];
   document.getElementById('exhibitionModalTitle').textContent=id?'Edit Exhibition':'New Exhibition';
-  if(id){ const ex=exhibitions.find(e=>e.id===id); document.getElementById('eName').value=ex.name; document.getElementById('ePlace').value=ex.place||''; document.getElementById('eStart').value=ex.start_date||''; document.getElementById('eEnd').value=ex.end_date||''; document.getElementById('eVisibility').value=ex.visibility||'draft'; exhibitionSelectedWorks=[...(ex.work_ids||[])]; }
-  else { ['eName','ePlace','eStart','eEnd'].forEach(id=>document.getElementById(id).value=''); document.getElementById('eVisibility').value='draft'; }
-  renderExhibitionWorksList(''); renderSelectedWorks();
+  document.getElementById('exwSearch').value='';
+  if(id){
+    const ex=exhibitions.find(e=>e.id===id);
+    document.getElementById('eName').value=ex.name;
+    document.getElementById('ePlace').value=ex.place||'';
+    document.getElementById('eStart').value=ex.start_date||'';
+    document.getElementById('eEnd').value=ex.end_date||'';
+    document.getElementById('eYear').value=ex.year||'';
+    document.getElementById('eVisibility').value=ex.visibility||'draft';
+    exOriginalIds = new Set(ex.work_ids||[]);
+    exSelectedIds = new Set(exOriginalIds);
+  } else {
+    ['eName','ePlace','eStart','eEnd','eYear'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('eVisibility').value='draft';
+    exOriginalIds = new Set();
+    exSelectedIds = new Set();
+  }
+  renderExhibitionWorksChecklist('');
   document.getElementById('exhibitionModal').classList.add('open');
 }
 
-function renderExhibitionWorksList(q) {
-  const list=document.getElementById('eWorksList');
-  const filtered=works.filter(w=>!exhibitionSelectedWorks.includes(w.id)&&(!q||w.title.toLowerCase().includes(q)));
-  list.innerHTML=filtered.map(w=>`<div style="padding:0.5rem 0.8rem;cursor:pointer;font-size:0.82rem;border-bottom:1px solid var(--panel);" onmouseover="this.style.background='var(--panel)'" onmouseout="this.style.background=''" data-wid="${w.id}"><strong style="font-style:italic;">${w.title}</strong> <span style="color:var(--mid);font-size:0.75rem;">${w.year||''}</span></div>`).join('')||'<div style="padding:0.5rem 0.8rem;color:var(--mid);font-size:0.82rem;">No works found</div>';
-  list.querySelectorAll('[data-wid]').forEach(el=>{ el.addEventListener('click',()=>{ exhibitionSelectedWorks.push(el.dataset.wid); renderExhibitionWorksList(document.getElementById('eWorkSearch').value.toLowerCase()); renderSelectedWorks(); }); });
+// Works checklist for the exhibition modal — same grouped/pre-ticked pattern as
+// the collection edit modal's works checklist (renderAtcList)
+let exOriginalIds = new Set();
+let exSelectedIds = new Set();
+
+function renderExhibitionWorksChecklist(query) {
+  const container = document.getElementById('exwWorksList');
+  const candidates = works.filter(w => !query || w.title.toLowerCase().includes(query));
+  if (!candidates.length) {
+    container.innerHTML = `<div style="padding:0.8rem;font-size:0.82rem;color:var(--mid);font-style:italic;">No works found.</div>`;
+    return;
+  }
+  const inExhibition = candidates.filter(w => exOriginalIds.has(w.id)).sort((a,b)=>a.title.localeCompare(b.title));
+  const notInExhibition = candidates.filter(w => !exOriginalIds.has(w.id)).sort((a,b)=>a.title.localeCompare(b.title));
+  const ordered = [...inExhibition, ...notInExhibition];
+  container.innerHTML = '';
+  ordered.forEach((w, i) => {
+    if (i === inExhibition.length && inExhibition.length && notInExhibition.length) {
+      const divider = document.createElement('div');
+      divider.style.cssText = 'padding:0.4rem 0.8rem;font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--light);background:var(--cream);border-bottom:1px solid var(--panel);';
+      divider.textContent = 'Other works';
+      container.appendChild(divider);
+    }
+    const row = document.createElement('label');
+    row.style.cssText = 'display:grid;grid-template-columns:24px 56px 1fr;gap:0.7rem;align-items:center;padding:0.55rem 0.8rem;cursor:pointer;border-bottom:1px solid var(--panel);';
+    row.onmouseover = () => row.style.background = 'var(--panel)';
+    row.onmouseout = () => row.style.background = '';
+    const checked = exSelectedIds.has(w.id) ? 'checked' : '';
+    row.innerHTML = `
+      <input type="checkbox" value="${w.id}" ${checked} style="accent-color:var(--accent);width:15px;height:15px;">
+      <img src="${thumbFor(w, 112, 84)}" style="width:56px;height:42px;object-fit:cover;" alt="">
+      <div>
+        <div style="font-family:var(--serif);font-style:italic;font-size:0.92rem;">${w.title}</div>
+        <div style="font-size:0.72rem;color:var(--mid);">${w.year||''}${w.medium?' · '+w.medium:''}</div>
+      </div>`;
+    row.querySelector('input').addEventListener('change', function() {
+      if (this.checked) exSelectedIds.add(w.id);
+      else exSelectedIds.delete(w.id);
+    });
+    container.appendChild(row);
+  });
 }
 
-function renderSelectedWorks() {
-  const div=document.getElementById('eSelectedWorks');
-  div.innerHTML=exhibitionSelectedWorks.map(id=>{ const w=works.find(x=>x.id===id); return w?`<span class="tag" style="cursor:pointer;background:var(--ink);color:var(--white);" data-remove="${id}">${w.title} ✕</span>`:''; }).join('');
-  div.querySelectorAll('[data-remove]').forEach(el=>{ el.addEventListener('click',()=>{ exhibitionSelectedWorks=exhibitionSelectedWorks.filter(id=>id!==el.dataset.remove); renderExhibitionWorksList(document.getElementById('eWorkSearch').value.toLowerCase()); renderSelectedWorks(); }); });
-}
-
-document.getElementById('eWorkSearch').addEventListener('input',function(){ renderExhibitionWorksList(this.value.toLowerCase()); });
+document.getElementById('exwSearch').addEventListener('input',function(){ renderExhibitionWorksChecklist(this.value.toLowerCase()); });
 document.getElementById('addExhibitionBtn').addEventListener('click',()=>openExhibitionModal(null));
 document.getElementById('cancelExhibitionBtn').addEventListener('click',()=>document.getElementById('exhibitionModal').classList.remove('open'));
 
@@ -1934,7 +2319,7 @@ document.getElementById('saveExhibitionBtn').addEventListener('click', async()=>
   if(!name){alert('Please enter a name.');return;}
   const btn=document.getElementById('saveExhibitionBtn');
   btn.innerHTML='<span class="spinner"></span>Saving…'; btn.disabled=true;
-  const data={name,place:document.getElementById('ePlace').value.trim(),start_date:document.getElementById('eStart').value,end_date:document.getElementById('eEnd').value,visibility:document.getElementById('eVisibility').value,work_ids:[...exhibitionSelectedWorks]};
+  const data={name,place:document.getElementById('ePlace').value.trim(),start_date:document.getElementById('eStart').value||null,end_date:document.getElementById('eEnd').value||null,year:parseInt(document.getElementById('eYear').value)||null,visibility:document.getElementById('eVisibility').value,work_ids:[...exSelectedIds]};
   try {
     if(editingExhibitionId){ const updated=await sb.safePatch('exhibitions',editingExhibitionId,data); const idx=exhibitions.findIndex(e=>e.id===editingExhibitionId); exhibitions[idx]=updated[0]||{...exhibitions[idx],...data}; }
     else { const created=await sb.safePost('exhibitions',data); exhibitions.push(created[0]||{id:uid(),...data}); }
@@ -2003,9 +2388,50 @@ function renderBioImages() {
   document.getElementById('bioImagePrimary').src = allImages[0];
 }
 
+// Plain-text CV parser: blank-line-separated paragraphs; a line in ALL CAPS
+// (with no lowercase letters) on its own is rendered as a section heading.
+function formatCvText(text) {
+  if (!text || !text.trim()) return '';
+  const blocks = text.split(/\n\s*\n/);
+  return blocks.map(block => {
+    const trimmed = block.trim();
+    if (!trimmed) return '';
+    const isHeading = trimmed.split('\n').length === 1 && /[A-Z]/.test(trimmed) && !/[a-z]/.test(trimmed);
+    if (isHeading) return `<div class="cv-heading">${trimmed}</div>`;
+    const lines = trimmed.split('\n').map(l => l.trim()).filter(Boolean);
+    return `<p>${lines.join('<br>')}</p>`;
+  }).join('');
+}
+
+function renderCv() {
+  const textEl = document.getElementById('cvText');
+  if (!textEl) return;
+  textEl.innerHTML = formatCvText(bio.cv_text);
+
+  const list = document.getElementById('cvExhibitions');
+  const visible = isAdmin() ? exhibitions : exhibitions.filter(ex => ex.visibility === 'published' || !ex.visibility);
+  if (!visible.length) { list.innerHTML = ''; return; }
+
+  const byYear = {};
+  visible.forEach(ex => {
+    const y = ex.year || (ex.start_date ? new Date(ex.start_date).getFullYear() : 'Undated');
+    (byYear[y] = byYear[y] || []).push(ex);
+  });
+  const years = Object.keys(byYear).sort((a, b) => b - a);
+  let html = `<div class="cv-heading">Exhibitions</div>`;
+  years.forEach(y => {
+    html += `<div class="cv-year">${y}</div>`;
+    byYear[y].sort((a, b) => exhibitionSortKey(b).localeCompare(exhibitionSortKey(a))).forEach(ex => {
+      html += `<p class="cv-exhibition-line">${ex.name}${ex.place ? ', ' + ex.place : ''}</p>`;
+    });
+  });
+  list.innerHTML = html;
+}
+
 document.getElementById('editBioBtn').addEventListener('click', () => {
   document.getElementById('editBioText').value = bio.text;
   document.getElementById('editBioStatement').value = bio.statement;
+  document.getElementById('editBioCv').value = bio.cv_text || '';
   bioExistingImageUrls = [...(bio.image_urls || [])].filter(Boolean);
   bioPendingImageUrls = [];
   document.getElementById('bioFile').value = '';
@@ -2036,13 +2462,15 @@ document.getElementById('cancelBioBtn').addEventListener('click', () => document
 document.getElementById('saveBioBtn').addEventListener('click', async () => {
   bio.text = document.getElementById('editBioText').value;
   bio.statement = document.getElementById('editBioStatement').value;
+  bio.cv_text = document.getElementById('editBioCv').value;
   bio.image_urls = [...bioExistingImageUrls, ...bioPendingImageUrls];
   document.getElementById('bioText').textContent = bio.text;
   document.getElementById('bioStatement').textContent = bio.statement;
   renderBioImages();
+  renderCv();
   try {
-    if (bio.id) await sb.safePatch('bio', bio.id, { text: bio.text, statement: bio.statement, image_urls: bio.image_urls });
-    else { const r = await sb.safePost('bio', { text: bio.text, statement: bio.statement, image_urls: bio.image_urls }); bio = r[0]; }
+    if (bio.id) await sb.safePatch('bio', bio.id, { text: bio.text, statement: bio.statement, cv_text: bio.cv_text, image_urls: bio.image_urls });
+    else { const r = await sb.safePost('bio', { text: bio.text, statement: bio.statement, cv_text: bio.cv_text, image_urls: bio.image_urls }); bio = r[0]; }
     bioExistingImageUrls = [];
     bioPendingImageUrls = [];
     document.getElementById('bioModal').classList.remove('open');
@@ -2075,12 +2503,10 @@ function printContactSheet(id) {
   const ex=exhibitions.find(e=>e.id===id);
   if(!ex) return;
   const exWorks=(ex.work_ids||[]).map(wid=>works.find(w=>w.id===wid)).filter(Boolean);
-  const start=ex.start_date?new Date(ex.start_date).toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'}):'';
-  const end=ex.end_date?new Date(ex.end_date).toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'}):'';
-  const dateStr=start?(end&&end!==start?`${start} – ${end}`:start):'';
+  const dateStr=exhibitionDateLabel(ex,true);
   const worksHtml=exWorks.map((w,i)=>{
     const colNames=(w.collection_ids||[]).map(cid=>{const c=getCollection(cid);return c?c.name:null;}).filter(Boolean);
-    return `<div class="print-work-item"><div class="print-work-thumb-cell"><img class="print-work-thumb" src="${cloudinaryPrintUrl(thumbFor(w))}" alt="${w.title}"></div><div class="print-work-info"><div class="print-work-title">${i+1}. ${w.title}</div><div class="print-work-meta">${w.year?`<strong>${w.year}</strong>`:''} ${w.medium?`<br>${w.medium}`:''} ${w.dimensions?`<br>${w.dimensions}`:''} ${colNames.length?`<br><em>${colNames.join(', ')}</em>`:''}</div></div></div>`;
+    return `<div class="print-work-item"><div class="print-work-thumb-cell"><img class="print-work-thumb" src="${cloudinaryPrintUrl(thumbFor(w))}" alt="${w.title}"></div><div class="print-work-info"><div class="print-work-title">${i+1}. ${w.title}</div><div class="print-work-meta">${w.year?`<strong>${w.year}</strong>`:''} ${w.medium?`<br>${w.medium}`:''} ${displayDimensions(w)?`<br>${displayDimensions(w)}`:''} ${colNames.length?`<br><em>${colNames.join(', ')}</em>`:''}</div></div></div>`;
   }).join('');
   const sheet=document.getElementById('printContactSheet');
   sheet.innerHTML=`<div class="print-header"><div style="font-size:7.5pt;letter-spacing:0.15em;text-transform:uppercase;color:#6b6660;margin-bottom:6pt;">Cerlin Karunaratne — Exhibition Contact Sheet</div><h1>${ex.name}</h1><div class="print-meta">${[ex.place,dateStr].filter(Boolean).join(' · ')}${exWorks.length?' · '+exWorks.length+' work'+(exWorks.length!==1?'s':''):''}</div></div><div class="print-works-grid">${worksHtml}</div>`;
@@ -2093,7 +2519,7 @@ function printContactSheetForCollection(id) {
   if(!c) return;
   const cWorks=visibleWorks().filter(w=>(w.collection_ids||[]).includes(c.id));
   const worksHtml=cWorks.map((w,i)=>{
-    return `<div class="print-work-item"><div class="print-work-thumb-cell"><img class="print-work-thumb" src="${cloudinaryPrintUrl(thumbFor(w))}" alt="${w.title}"></div><div class="print-work-info"><div class="print-work-title">${i+1}. ${w.title}</div><div class="print-work-meta">${w.year?`<strong>${w.year}</strong>`:''} ${w.medium?`<br>${w.medium}`:''} ${w.dimensions?`<br>${w.dimensions}`:''}</div></div></div>`;
+    return `<div class="print-work-item"><div class="print-work-thumb-cell"><img class="print-work-thumb" src="${cloudinaryPrintUrl(thumbFor(w))}" alt="${w.title}"></div><div class="print-work-info"><div class="print-work-title">${i+1}. ${w.title}</div><div class="print-work-meta">${w.year?`<strong>${w.year}</strong>`:''} ${w.medium?`<br>${w.medium}`:''} ${displayDimensions(w)?`<br>${displayDimensions(w)}`:''}</div></div></div>`;
   }).join('');
   const sheet=document.getElementById('printContactSheet');
   sheet.innerHTML=`<div class="print-header"><div style="font-size:7.5pt;letter-spacing:0.15em;text-transform:uppercase;color:#6b6660;margin-bottom:6pt;">Cerlin Karunaratne — Collection Contact Sheet</div><h1>${c.name}</h1><div class="print-meta">${[c.description,cWorks.length?cWorks.length+' work'+(cWorks.length!==1?'s':''):''].filter(Boolean).join(' · ')}</div></div><div class="print-works-grid">${worksHtml}</div>`;
@@ -2115,11 +2541,13 @@ window.switchView=function(name, resetFilter=false){
   if(name==='works') renderWorksGrid();
   if(name==='collections') renderCollections();
   if(name==='exhibitions') renderExhibitions();
+  if(name==='cv') renderCv();
   document.querySelectorAll('#mobileNav .tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
 };
 
 document.querySelectorAll('header .tab-btn').forEach(b=>{ b.onclick=()=>window.switchView(b.dataset.view, b.dataset.view==='works'); });
 document.querySelectorAll('#mobileNav .tab-btn').forEach(b=>{ b.onclick=()=>window.switchView(b.dataset.view, b.dataset.view==='works'); });
+document.getElementById('viewCvBtn').addEventListener('click', () => window.switchView('cv'));
 
 // ══════════════════════════════════════════════════════════════
 //  MOBILE
