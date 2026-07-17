@@ -167,7 +167,8 @@
   .cv-exhibition-line { font-family: var(--serif); font-size: 1rem; font-weight: 300; color: var(--mid); margin: 0 0 0.35rem; line-height: 1.5; }
   .bio-view { display: grid; grid-template-columns: 1.2fr 1fr; gap: 3.5rem; align-items: start; }
   .bio-view .bio-text { font-family: var(--serif); font-size: 1.2rem; font-weight: 300; line-height: 1.75; color: var(--mid); margin-bottom: 2rem; }
-  .bio-view .bio-statement { font-family: var(--serif); font-size: 1rem; font-style: italic; line-height: 1.8; color: var(--mid); padding: 1.5rem 2rem; border-left: 2px solid var(--accent); margin-bottom: 2rem; }
+  .bio-view .bio-statement { font-family: var(--serif); font-size: 1.2rem; font-style: italic; line-height: 1.8; color: var(--mid); padding: 1.5rem 2rem; border-left: 2px solid var(--accent); margin-bottom: 2rem; }
+  .bio-view a, .cv-text a { color: inherit; text-decoration: underline; text-underline-offset: 0.15em; }
   .bio-cv-panel { display: flex; flex-direction: column; gap: 0.5rem; }
   .bio-image-panel { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem; }
   .bio-image-primary { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; background: var(--panel); border-radius: 2px; }
@@ -2380,6 +2381,14 @@ function renderBioImages() {
   document.getElementById('bioImagePrimary').src = allImages[0];
 }
 
+// Escapes HTML special characters, then wraps any email address in a mailto link.
+function escapeHtml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function linkifyEmails(text) {
+  return escapeHtml(text).replace(/([\w.+-]+@[\w-]+\.[\w.-]+)/g, '<a href="mailto:$1">$1</a>');
+}
+
 // Plain-text CV parser: blank-line-separated paragraphs; a line in ALL CAPS
 // (with no lowercase letters) on its own is rendered as a section heading.
 function formatCvText(text) {
@@ -2389,8 +2398,8 @@ function formatCvText(text) {
     const trimmed = block.trim();
     if (!trimmed) return '';
     const isHeading = trimmed.split('\n').length === 1 && /[A-Z]/.test(trimmed) && !/[a-z]/.test(trimmed);
-    if (isHeading) return `<div class="cv-heading">${trimmed}</div>`;
-    const lines = trimmed.split('\n').map(l => l.trim()).filter(Boolean);
+    if (isHeading) return `<div class="cv-heading">${escapeHtml(trimmed)}</div>`;
+    const lines = trimmed.split('\n').map(l => l.trim()).filter(Boolean).map(linkifyEmails);
     return `<p>${lines.join('<br>')}</p>`;
   }).join('');
 }
@@ -2456,8 +2465,8 @@ document.getElementById('saveBioBtn').addEventListener('click', async () => {
   bio.statement = document.getElementById('editBioStatement').value;
   bio.cv_text = document.getElementById('editBioCv').value;
   bio.image_urls = [...bioExistingImageUrls, ...bioPendingImageUrls];
-  document.getElementById('bioText').textContent = bio.text;
-  document.getElementById('bioStatement').textContent = bio.statement;
+  document.getElementById('bioText').innerHTML = linkifyEmails(bio.text);
+  document.getElementById('bioStatement').innerHTML = linkifyEmails(bio.statement);
   renderBioImages();
   renderCv();
   try {
@@ -2552,8 +2561,8 @@ showMobileNav(); window.addEventListener('resize',showMobileNav);
 
 function renderAll() {
   renderWorksGrid(); renderCollections(); renderExhibitions();
-  document.getElementById('bioText').textContent=bio.text||'';
-  document.getElementById('bioStatement').textContent=bio.statement||'';
+  document.getElementById('bioText').innerHTML=linkifyEmails(bio.text||'');
+  document.getElementById('bioStatement').innerHTML=linkifyEmails(bio.statement||'');
   renderBioImages();
   renderCv();
 }
