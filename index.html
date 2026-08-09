@@ -9,17 +9,24 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+  /* ══════════════════════════════════════════════════════════
+     THEME — swap this block to restyle the whole site.
+     Save a copy before editing if you want to keep this version.
+     ══════════════════════════════════════════════════════════ */
   :root {
-    --cream: #f7f4ef;
-    --ink: #1a1814;
-    --mid: #6b6660;
-    --light: #c8c3bc;
-    --accent: #8b4a2f;
-    --white: #ffffff;
-    --panel: #f0ece5;
+    --cream: #ffffff;   /* page background */
+    --ink: #000000;     /* primary text */
+    --mid: #666666;     /* secondary text, labels */
+    --light: #d9d9d9;   /* borders, dividers */
+    --accent: #1a1a1a;  /* emphasis (was terracotta) — near-black, distinct from pure --ink via weight/context rather than hue */
+    --white: #ffffff;   /* card / panel backgrounds */
+    --panel: #f5f5f5;   /* subtle fill (tags, work cards) */
     --serif: 'Arial', 'Helvetica Neue', Arial, sans-serif;
     --sans: 'Arial', 'Helvetica Neue', Arial, sans-serif;
   }
+  /* ══════════════════════════════════════════════════════════
+     END THEME
+     ══════════════════════════════════════════════════════════ */
 
   html { font-size: 16px; scroll-behavior: smooth; }
   body { background: var(--cream); color: var(--ink); font-family: var(--sans); font-weight: 300; min-height: 100vh; }
@@ -54,7 +61,7 @@
   .btn.primary { background: var(--ink); color: var(--white); }
   .btn.primary:hover { background: var(--accent); border-color: var(--accent); }
   .btn.accent { background: var(--accent); color: var(--white); border-color: var(--accent); }
-  .btn.accent:hover { background: #7a3f27; border-color: #7a3f27; }
+  .btn.accent:hover { background: #000000; border-color: #000000; }
   .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
   select.filter-select { padding: 0.6rem 1rem; background: var(--white); border: 1px solid var(--light); font-family: var(--sans); font-size: 0.8rem; color: var(--mid); border-radius: 2px; outline: none; cursor: pointer; }
@@ -135,6 +142,18 @@
   .upload-zone strong { display: block; font-size: 0.9rem; color: var(--ink); margin-bottom: 0.3rem; }
   .upload-zone input[type="file"] { display: none; }
   .upload-previews { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.7rem; }
+  .ex-pdf-tile { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.3rem; background:var(--panel); border:1px solid var(--light); border-radius:2px; text-align:center; padding:0.4rem; box-sizing:border-box; }
+  .ex-pdf-tile .ex-pdf-icon { font-size:1.3rem; }
+  .ex-pdf-tile .ex-pdf-label { font-size:0.62rem; color:var(--mid); word-break:break-word; line-height:1.3; max-width:100%; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+  .ex-chip-link { text-decoration: none; }
+  .ex-chip-link:hover { color: var(--ink); background: var(--light); }
+  #exLightbox { display:none; position:fixed; inset:0; background:#000; z-index:1000; align-items:center; justify-content:center; flex-direction:column; cursor:pointer; }
+  #exLightbox.open { display:flex; }
+  #exLightbox img { max-width:92vw; max-height:86vh; object-fit:contain; display:block; cursor:default; }
+  #exLightboxCaption { color:#fff; font-size:0.78rem; margin-top:0.8rem; text-align:center; max-width:80vw; }
+  #exLightboxClose { position:fixed; top:1.2rem; right:1.2rem; width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.15); color:#fff; border:none; cursor:pointer; font-size:0.95rem; }
+  #exLightboxPrev, #exLightboxNext { position:fixed; top:50%; transform:translateY(-50%); width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,0.15); color:#fff; border:none; cursor:pointer; font-size:1.1rem; }
+  #exLightboxPrev { left:1rem; } #exLightboxNext { right:1rem; }
   .upload-preview { width: 70px; height: 70px; object-fit: cover; border: 1px solid var(--light); }
   .upload-drop-target { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
   #uploadPreviews > div:active { cursor: grabbing; }
@@ -160,18 +179,32 @@
   .exhibition-date { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); white-space: nowrap; }
 
   /* ── BIO ── */
-  .cv-text p { font-family: var(--serif); font-size: 1.05rem; font-weight: 300; line-height: 1.75; color: var(--mid); margin: 0 0 1.2rem; }
-  .cv-heading { font-family: var(--serif); font-size: 0.72rem; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mid); margin: 2.2rem 0 0.9rem; }
+  /* CV column — same font and size throughout, including the exhibitions
+     list, per Cerlin's request. Heading/year rows keep weight, letter-
+     spacing and case as the only differentiators, not font or size. */
+  .cv-text p { font-family: var(--sans); font-size: 0.9rem; font-weight: 300; line-height: 1.55; color: var(--mid); margin: 0 0 0.9rem; }
+  .cv-heading { font-family: var(--sans); font-size: 0.9rem; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mid); margin: 1.5rem 0 0.6rem; }
   .cv-heading:first-child { margin-top: 0; }
-  .cv-year { font-family: var(--serif); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em; color: var(--mid); margin: 1.4rem 0 0.5rem; }
-  .cv-exhibition-line { font-family: var(--serif); font-size: 1rem; font-weight: 300; color: var(--mid); margin: 0 0 0.35rem; line-height: 1.5; }
-  .bio-view { display: grid; grid-template-columns: 1.2fr 1fr; gap: 3.5rem; align-items: start; }
-  .bio-view .bio-text { font-family: var(--serif); font-size: 1.2rem; font-weight: 300; line-height: 1.75; color: var(--mid); margin-bottom: 2rem; }
-  .bio-view .bio-statement { font-family: var(--serif); font-size: 1.2rem; font-style: italic; line-height: 1.8; color: var(--mid); padding: 1.5rem 2rem; border-left: 2px solid var(--accent); margin-bottom: 2rem; }
+  .cv-year { font-family: var(--sans); font-size: 0.9rem; font-weight: 500; letter-spacing: 0.08em; color: var(--mid); margin: 1rem 0 0.4rem; }
+  .cv-exhibition-line { font-family: var(--sans); font-size: 0.9rem; font-weight: 300; color: var(--mid); margin: 0 0 0.25rem; line-height: 1.4; }
+  .bio-view { display: grid; grid-template-columns: 0.85fr 1.05fr 1.3fr; gap: 2.8rem; align-items: start; }
+  .bio-view .bio-text { font-family: var(--serif); font-size: 1.05rem; font-weight: 300; line-height: 1.6; color: var(--mid); margin-bottom: 1.4rem; }
+  .bio-view .bio-statement { font-family: var(--serif); font-size: 1.05rem; font-style: italic; line-height: 1.6; color: var(--mid); padding: 1.2rem 1.6rem; border-left: 2px solid var(--accent); margin-bottom: 1.4rem; }
   .bio-view a, .cv-text a { color: inherit; text-decoration: underline; text-underline-offset: 0.15em; }
   .bio-cv-panel { display: flex; flex-direction: column; gap: 0.5rem; }
-  .bio-image-panel { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem; }
-  .bio-image-primary { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; background: var(--panel); border-radius: 2px; }
+  .bio-statement-col { display: flex; flex-direction: column; }
+  .bio-image-panel { display: flex; flex-direction: column; gap: 1rem; }
+  .bio-image-primary { width: auto; max-width: 100%; height: min(58vh, 540px); aspect-ratio: 3/4; object-fit: cover; display: block; background: var(--panel); border-radius: 2px; }
+
+  /* One-screen About layout on desktop: the statement and CV columns
+     scroll internally if their content outgrows the viewport, so the
+     page itself never needs to scroll on a standard laptop screen. The
+     photo column doesn't need this — it's capped by height above.
+     Mobile/tablet (bio-view already stacks to 1 column under 900px) is
+     left as normal page flow — see media queries below. */
+  @media (min-width: 901px) {
+    .bio-statement-col, .bio-cv-panel { max-height: calc(100vh - 265px); overflow-y: auto; padding-right: 0.8rem; }
+  }
 
   /* ── EMPTY STATE ── */
   .empty-state { text-align: center; padding: 5rem 2rem; color: var(--light); }
@@ -224,6 +257,7 @@
     .modal { max-height: 92vh; border-radius: 0; padding: 1.8rem 1.5rem; }
     .form-grid { grid-template-columns: 1fr; }
     .form-full { grid-column: 1; }
+    .bio-view { grid-template-columns: 1fr; gap: 2rem; }
   }
   @media (max-width: 600px) {
     .works-grid .works-col:nth-child(2), .works-grid .works-col:nth-child(3) { display: none; }
@@ -243,18 +277,18 @@
     body > *:not(#printContactSheet) { display: none !important; }
     #printContactSheet { display: block !important; }
   }
-  #printContactSheet { display: none; font-family: var(--sans); color: #1a1814; background: white; }
-  .print-header { padding: 0 1cm 0.4cm; border-bottom: 2px solid #1a1814; }
+  #printContactSheet { display: none; font-family: var(--sans); color: var(--ink); background: white; }
+  .print-header { padding: 0 1cm 0.4cm; border-bottom: 2px solid var(--ink); }
   .print-header h1 { font-family: var(--serif); font-size: 20pt; font-weight: 300; font-style: italic; margin-bottom: 4pt; }
-  .print-header .print-meta { font-size: 9pt; color: #6b6660; letter-spacing: 0.08em; }
+  .print-header .print-meta { font-size: 9pt; color: var(--mid); letter-spacing: 0.08em; }
   .print-works-grid { padding: 0.3cm 1cm; display: block; }
   .print-work-item + .print-work-item { margin-top: 0.45cm; }
   .print-work-item { display: table; width: 100%; table-layout: fixed; page-break-inside: avoid; break-inside: avoid-page; }
   .print-work-thumb-cell { display: table-cell; width: 72%; height: 5.7cm; overflow: hidden; }
-  .print-work-thumb { display: block; width: 100%; height: 100%; object-fit: contain; object-position: left center; background: #f0ece5; }
+  .print-work-thumb { display: block; width: 100%; height: 100%; object-fit: contain; object-position: left center; background: var(--panel); }
   .print-work-info { display: table-cell; width: 28%; height: 5.7cm; padding: 4pt 0 4pt 14pt; vertical-align: top; box-sizing: border-box; }
   .print-work-title { font-family: var(--serif); font-size: 13pt; font-style: italic; font-weight: 400; margin-bottom: 6pt; }
-  .print-work-meta { font-size: 9pt; color: #6b6660; line-height: 1.7; }
+  .print-work-meta { font-size: 9pt; color: var(--mid); line-height: 1.7; }
 
   /* ── LOUPE MAGNIFIER ── */
   #loupeLens {
@@ -319,20 +353,21 @@
 
 <div class="shell">
   <header>
-    <div class="logo">Material <em>Poetry</em></div>
+    <div class="logo" id="siteLogo" style="cursor:pointer;">Cerlin Karunaratne</div>
     <nav class="header-tabs">
       <button class="tab-btn active" data-view="works">Works</button>
-      <button class="tab-btn" data-view="collections">Collections</button>
+      <button class="tab-btn admin-only" data-view="collections">Collections</button>
       <button class="tab-btn admin-only" data-view="exhibitions">Exhibitions</button>
       <button class="tab-btn" data-view="bio">About</button>
     </nav>
+    <button class="mode-badge admin-only" id="whatsLiveBtn">What's Live</button>
     <button class="mode-badge admin-only" id="adminLogoutBtn">Sign out</button>
-    <button class="mode-badge" id="adminLoginBtn" style="display:none;">Admin</button>
+    <button class="mode-badge" id="adminLoginBtn" style="display:none !important;">Admin</button>
   </header>
 
   <nav class="mobile-nav" id="mobileNav" style="display:none;">
     <button class="tab-btn active" data-view="works"><span class="nav-icon">◻</span>Works</button>
-    <button class="tab-btn" data-view="collections"><span class="nav-icon">⊞</span>Collections</button>
+    <button class="tab-btn admin-only" data-view="collections"><span class="nav-icon">⊞</span>Collections</button>
     <button class="tab-btn admin-only" data-view="exhibitions"><span class="nav-icon">◈</span>Exhibitions</button>
     <button class="tab-btn" data-view="bio"><span class="nav-icon">◉</span>About</button>
   </nav>
@@ -377,21 +412,24 @@
 
     <!-- BIO -->
     <div class="view" id="view-bio">
-      <div class="page-header">
-        <h1><small>Artist</small>About</h1>
+      <div class="page-header" style="margin-bottom:1.3rem;padding-bottom:1rem;">
+        <h1></h1>
         <div class="page-actions">
+          <span class="visibility-badge admin-only" id="bioVisibilityBadge" style="display:none;position:static;align-self:center;"></span>
           <button class="btn admin-only" id="editBioBtn">Edit</button>
         </div>
       </div>
       <div class="bio-view">
-        <div>
+        <div class="bio-photo-col">
+          <div class="bio-image-panel" id="bioImagePanel" style="display:none;">
+            <img class="bio-image-primary" id="bioImagePrimary" alt="">
+          </div>
+        </div>
+        <div class="bio-statement-col">
           <blockquote class="bio-statement" id="bioStatement">"Artist statement."</blockquote>
           <p class="bio-text" id="bioText">Cerlin is an artist based in Kerry, Ireland.</p>
         </div>
         <div class="bio-cv-panel">
-          <div class="bio-image-panel" id="bioImagePanel" style="display:none;">
-            <img class="bio-image-primary" id="bioImagePrimary" alt="">
-          </div>
           <div class="cv-text" id="cvText"></div>
           <div id="cvExhibitions"></div>
         </div>
@@ -411,7 +449,7 @@
         <div class="detail-field"><label>Year</label><p id="detailYear">—</p></div>
         <div class="detail-field"><label>Medium</label><p id="detailMedium">—</p></div>
         <div class="detail-field"><label>Dimensions</label><p id="detailDimensions">—</p></div>
-        <div class="detail-field"><label>Collection</label><p id="detailCollection">—</p></div>
+        <div class="detail-field admin-only admin-field"><label>Collection</label><p id="detailCollection">—</p></div>
         <div class="detail-field"><label>Tags</label><p id="detailTags">—</p></div>
         <div class="detail-field admin-only admin-field"><label>Visibility</label><p id="detailVisibility">—</p></div>
         <div class="detail-field admin-only admin-field"><label>Private Notes</label><p id="detailNotes" style="color:var(--mid);font-style:italic;">—</p></div>
@@ -518,6 +556,24 @@
   </div>
 </div>
 
+<!-- WHAT'S LIVE — admin status board for Works / Collections / Exhibitions -->
+<div class="modal-overlay" id="liveStatusModal">
+  <div class="modal">
+    <h2>What's Live</h2>
+    <div style="display:flex;border:1px solid var(--light);width:fit-content;margin:1rem 0;">
+      <button class="wlTab tab-btn active" data-type="works" style="border-right:1px solid var(--light);">Works</button>
+      <button class="wlTab tab-btn" data-type="collections" style="border-right:1px solid var(--light);">Collections</button>
+      <button class="wlTab tab-btn" data-type="exhibitions">Exhibitions</button>
+    </div>
+    <input class="search-input" type="text" id="wlSearch" placeholder="Search…" style="margin-bottom:0.7rem;">
+    <div id="wlList" style="max-height:400px;overflow-y:auto;border:1px solid var(--light);background:var(--white);border-radius:2px;"></div>
+    <p style="font-size:0.72rem;color:var(--mid);margin-top:0.8rem;">Checked = live on the public site right now. Toggle to publish or take down instantly — no need to sign out to check.</p>
+    <div class="form-actions">
+      <button class="btn accent" id="closeLiveStatusBtn">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- EXHIBITION DETAIL OVERLAY -->
 <div class="detail-overlay" id="exhibitionDetailOverlay">
   <div class="detail-panel" style="grid-template-columns:1fr;max-width:700px;">
@@ -530,7 +586,11 @@
         <div id="exDetailSizeSummary" class="admin-only" style="font-size:0.72rem;color:var(--mid);text-align:right;line-height:1.6;flex-shrink:0;max-width:280px;"></div>
         <button class="detail-close" id="exDetailClose" style="position:static;background:var(--panel);color:var(--ink);flex-shrink:0;width:32px;height:32px;">✕</button>
       </div>
+      <img id="exDetailPoster" src="" alt="" style="display:none;width:100%;max-height:min(46vh,420px);object-fit:contain;background:var(--panel);border-radius:2px;margin-bottom:1.5rem;cursor:pointer;">
+      <p id="exDetailAbout" style="display:none;font-family:var(--serif);font-style:italic;font-size:1.02rem;line-height:1.65;color:var(--ink);margin-bottom:1.5rem;white-space:pre-line;"></p>
       <div id="exDetailWorks" style="display:flex;flex-direction:column;gap:0.7rem;max-height:55vh;overflow-y:auto;margin-bottom:1.5rem;"></div>
+      <div id="exDetailCoExhibitors" style="display:none;flex-wrap:wrap;gap:0.4rem;align-items:center;margin-bottom:1.2rem;"></div>
+      <div id="exDetailImages" style="display:none;gap:0.6rem;overflow-x:auto;padding-bottom:0.5rem;margin-bottom:1.5rem;"></div>
       <div style="display:flex;gap:0.7rem;flex-wrap:wrap;border-top:1px solid var(--light);padding-top:1.2rem;">
         <button class="btn admin-only" id="exDetailPrintBtn">⎙ Print Contact Sheet</button>
         <button class="btn admin-only" id="exDetailExportBtn">⬇ Export Zip</button>
@@ -562,10 +622,27 @@
           <option value="published">Published — public</option>
         </select>
       </div>
+      <div class="form-group form-full"><label>About This Show <span style="font-weight:300;text-transform:none;letter-spacing:0;">(a few words in your own voice — shown as plain text on the exhibition page, no heading)</span></label><textarea id="eAbout" style="min-height:90px;" placeholder="What this show was, how the work came together, what it felt like…"></textarea></div>
       <div class="form-group form-full">
         <label>Works in this Exhibition</label>
         <input class="search-input" type="text" id="exwSearch" placeholder="Search works…" style="margin-bottom:0.5rem;">
         <div id="exwWorksList" style="max-height:280px;overflow-y:auto;border:1px solid var(--light);background:var(--white);border-radius:2px;"></div>
+      </div>
+      <div class="form-group form-full">
+        <label>Shown With <span style="font-weight:300;text-transform:none;letter-spacing:0;">(other artists in this show — link optional)</span></label>
+        <div id="exCoList" style="display:flex;flex-direction:column;gap:0.5rem;"></div>
+        <button type="button" class="btn" id="addCoExhibitorBtn" style="margin-top:0.6rem;">+ Add Artist</button>
+      </div>
+      <div class="form-group form-full">
+        <label>Exhibition Images <span style="font-weight:300;text-transform:none;letter-spacing:0;">(poster, booklet, install or opening-night shots — separate from the works themselves)</span></label>
+        <label class="upload-zone">
+          <input type="file" id="exImagesFile" accept="image/*,application/pdf" multiple>
+          <strong>Click to upload images or a PDF</strong>
+          <p>Poster or booklet (PDF or photos), install or press photos</p>
+        </label>
+        <p id="exImagesUploadProgress" style="display:none;font-size:0.75rem;color:var(--mid);margin-top:0.4rem;"></p>
+        <div class="upload-previews" id="exImagesPreviews" style="align-items:flex-start;"></div>
+        <p style="font-size:0.7rem;color:var(--light);margin-top:0.5rem;">Tag one image "Poster" to feature it large at the top of the exhibition page — PDFs can't be featured this way and always show as a document tile.</p>
       </div>
     </div>
     <div class="form-actions">
@@ -583,6 +660,14 @@
       <div class="form-group form-full"><label>Artist Statement</label><textarea id="editBioStatement" style="min-height:100px;"></textarea></div>
       <div class="form-group form-full"><label>Artist Bio</label><textarea id="editBioText" style="min-height:120px;"></textarea></div>
       <div class="form-group form-full"><label>CV — Education &amp; Awards <span style="font-weight:300;text-transform:none;letter-spacing:0;">(plain text — put section names like EDUCATION or AWARDS in capitals on their own line; exhibitions are added automatically below from the Exhibitions tab)</span></label><textarea id="editBioCv" style="min-height:160px;"></textarea></div>
+      <div class="form-group form-full">
+        <label>Visibility</label>
+        <select id="bioVisibility">
+          <option value="draft">Draft — admin only</option>
+          <option value="preview">Preview — hidden from public nav, admin only</option>
+          <option value="published">Published — public</option>
+        </select>
+      </div>
       <div class="form-group form-full">
         <label>Portrait Images</label>
         <label class="upload-zone">
@@ -620,6 +705,13 @@
 <div id="toast"></div>
 <div id="printContactSheet"></div>
 <div id="imgFullscreenOverlay"></div>
+<div id="exLightbox">
+  <button id="exLightboxClose" title="Close">✕</button>
+  <button id="exLightboxPrev" title="Previous">‹</button>
+  <img id="exLightboxImg" src="" alt="">
+  <button id="exLightboxNext" title="Next">›</button>
+  <p id="exLightboxCaption"></p>
+</div>
 <div id="imgGridOverlay"></div>
 
 <script>
@@ -633,7 +725,7 @@ const CONFIG = {
   SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indvd3Rkd2xwYXRwcWp6bHFwcWNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4MTAzMjcsImV4cCI6MjA5MzM4NjMyN30.EA32PGNEmFMesy-Fq3HtKUbZdZ4aPxRSM6L6wLEoXNk',
   CLOUDINARY_CLOUD_NAME: 'dgimf8yud',
   CLOUDINARY_UPLOAD_PRESET: 'material-poetry',
-  SITE_URL: 'https://material-poetry.netlify.app',
+  SITE_URL: 'https://cerlinkarunaratne.com',
 };
 
 // ══════════════════════════════════════════════════════════════
@@ -697,7 +789,7 @@ async function uploadToCloudinary(file, onProgress) {
   const fd = new FormData();
   fd.append('file', file);
   fd.append('upload_preset', CONFIG.CLOUDINARY_UPLOAD_PRESET);
-  const resourceType = file.type.startsWith('video/') ? 'video' : 'image';
+  const resourceType = file.type.startsWith('video/') ? 'video' : (file.type === 'application/pdf' ? 'raw' : 'image');
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `https://api.cloudinary.com/v1_1/${CONFIG.CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`);
@@ -770,6 +862,21 @@ function generateShareUrl(token) {
 }
 
 // ══════════════════════════════════════════════════════════════
+//  LOGIN MODE — check URL for ?login (hidden admin entry point)
+// ══════════════════════════════════════════════════════════════
+
+function checkLoginMode() {
+  const params = new URLSearchParams(window.location.search);
+  if (!params.has('login')) return;
+  if (document.body.classList.contains('admin')) return; // already signed in
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('loginError').style.display = 'none';
+  document.getElementById('loginModal').classList.add('open');
+  setTimeout(()=>document.getElementById('loginEmail').focus(), 100);
+}
+
+// ══════════════════════════════════════════════════════════════
 //  VISIBILITY HELPERS
 // ══════════════════════════════════════════════════════════════
 
@@ -794,7 +901,6 @@ function visibleWorks() {
 
 function setAdminMode(on) {
   document.body.classList.toggle('admin', on);
-  document.getElementById('adminLoginBtn').style.display = on ? 'none' : '';
   document.getElementById('adminLogoutBtn').style.display = on ? '' : 'none';
   renderAll();
 }
@@ -803,10 +909,8 @@ function checkSession() {
   const token = sessionStorage.getItem('sb_token');
   if (token) {
     document.body.classList.add('admin');
-    document.getElementById('adminLoginBtn').style.display = 'none';
     document.getElementById('adminLogoutBtn').style.display = '';
   } else {
-    document.getElementById('adminLoginBtn').style.display = '';
     document.getElementById('adminLogoutBtn').style.display = 'none';
   }
 }
@@ -868,13 +972,13 @@ async function loadAll() {
         try { bio.image_urls = JSON.parse(bio.image_urls); } catch(e) { bio.image_urls = []; }
       }
       if (!Array.isArray(bio.image_urls)) bio.image_urls = [];
+      if (!bio.visibility) bio.visibility = 'preview';
     }
     checkPreviewMode();
+    checkLoginMode();
     renderAll();
   } catch(e) {
     console.error(e);
-    // Show login button even if load fails
-    document.getElementById('adminLoginBtn').style.display = '';
     toast('Could not load data — check connection', true);
   }
 }
@@ -883,7 +987,7 @@ async function loadAll() {
 //  PLACEHOLDER IMAGES
 // ══════════════════════════════════════════════════════════════
 
-const PC = [['#d9d2c7','#b8b0a4'],['#c9cfc4','#a8b0a2'],['#cdc4bb','#a89f96'],['#bfc9cc','#9aadb2'],['#d4c9be','#b0a096'],['#c5c9be','#9fa4a0']];
+const PC = [['#f0f0f0','#999999'],['#ececec','#8c8c8c'],['#e8e8e8','#808080'],['#e4e4e4','#737373'],['#eeeeee','#8f8f8f'],['#e6e6e6','#7a7a7a']];
 function makePlaceholderSrc(id, w=400, h=300) {
   const idx=Math.abs((id||'x').split('').reduce((a,c)=>a+c.charCodeAt(0),0))%PC.length;
   const [bg,fg]=PC[idx];
@@ -1659,6 +1763,11 @@ document.addEventListener('keydown', e => {
   if (document.getElementById('imgGridOverlay').classList.contains('open') && e.key === 'Escape') {
     closeImgGridOverlay();
   }
+  if (document.getElementById('exLightbox').classList.contains('open')) {
+    if (e.key === 'Escape') document.getElementById('exLightbox').classList.remove('open');
+    if (e.key === 'ArrowLeft' && exLightboxImages.length > 1) { exLightboxIdx=(exLightboxIdx-1+exLightboxImages.length)%exLightboxImages.length; renderExLightbox(); }
+    if (e.key === 'ArrowRight' && exLightboxImages.length > 1) { exLightboxIdx=(exLightboxIdx+1)%exLightboxImages.length; renderExLightbox(); }
+  }
 });
 
 function openDetail(id) {
@@ -2193,6 +2302,122 @@ document.getElementById('saveCollectionBtn').addEventListener('click', async()=>
 });
 
 // ══════════════════════════════════════════════════════════════
+//  WHAT'S LIVE — status board for Works / Collections / Exhibitions
+//  Same searchable-checklist pattern as the Edit Collection modal
+//  (renderAtcList), but grouped by "published" instead of collection
+//  membership, and each toggle patches Supabase immediately rather
+//  than waiting for a Save button — this is a status view, not a form.
+// ══════════════════════════════════════════════════════════════
+
+let wlActiveType = 'works';
+
+function openLiveStatusModal() {
+  wlActiveType = 'works';
+  document.querySelectorAll('.wlTab').forEach(b => b.classList.toggle('active', b.dataset.type === 'works'));
+  document.getElementById('wlSearch').value = '';
+  renderWlList('');
+  document.getElementById('liveStatusModal').classList.add('open');
+}
+
+function wlItemsFor(type) {
+  if (type === 'works') return works;
+  if (type === 'collections') return collections;
+  return exhibitions;
+}
+
+function wlLabelFor(type, it) {
+  if (type === 'works') {
+    return { title: it.title, sub: `${it.year || ''}${it.medium ? ' · ' + it.medium : ''}` };
+  }
+  if (type === 'collections') {
+    const count = works.filter(w => (w.collection_ids || []).includes(it.id)).length;
+    return { title: it.name, sub: `${count} work${count !== 1 ? 's' : ''}` };
+  }
+  return { title: it.name, sub: [it.place, exhibitionDateLabel(it)].filter(Boolean).join(' · ') };
+}
+
+function renderWlList(query) {
+  const container = document.getElementById('wlList');
+  const q = (query || '').toLowerCase();
+  const items = wlItemsFor(wlActiveType);
+  const candidates = items.filter(it => {
+    const name = (it.title || it.name || '').toLowerCase();
+    return !q || name.includes(q);
+  });
+  if (!candidates.length) {
+    container.innerHTML = `<div style="padding:0.8rem;font-size:0.82rem;color:var(--mid);font-style:italic;">No ${wlActiveType} found.</div>`;
+    return;
+  }
+  const nameOf = it => (it.title || it.name || '');
+  const live = candidates.filter(it => it.visibility === 'published').sort((a,b) => nameOf(a).localeCompare(nameOf(b)));
+  const notLive = candidates.filter(it => it.visibility !== 'published').sort((a,b) => nameOf(a).localeCompare(nameOf(b)));
+  const ordered = [...live, ...notLive];
+  container.innerHTML = '';
+  ordered.forEach((it, i) => {
+    if (i === live.length && live.length && notLive.length) {
+      const divider = document.createElement('div');
+      divider.style.cssText = 'padding:0.4rem 0.8rem;font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--light);background:var(--cream);border-bottom:1px solid var(--panel);';
+      divider.textContent = 'Not published';
+      container.appendChild(divider);
+    }
+    const { title, sub } = wlLabelFor(wlActiveType, it);
+    const row = document.createElement('label');
+    row.style.cssText = 'display:grid;grid-template-columns:24px 56px 1fr;gap:0.7rem;align-items:center;padding:0.55rem 0.8rem;cursor:pointer;border-bottom:1px solid var(--panel);';
+    row.onmouseover = () => row.style.background = 'var(--panel)';
+    row.onmouseout = () => row.style.background = '';
+    const checked = it.visibility === 'published' ? 'checked' : '';
+    const thumbHtml = wlActiveType === 'works'
+      ? `<img src="${thumbFor(it, 112, 84)}" style="width:56px;height:42px;object-fit:cover;" alt="">`
+      : `<div style="width:56px;height:42px;background:var(--panel);"></div>`;
+    row.innerHTML = `
+      <input type="checkbox" ${checked} style="accent-color:var(--accent);width:15px;height:15px;">
+      ${thumbHtml}
+      <div>
+        <div style="font-family:var(--serif);font-style:italic;font-size:0.92rem;">${title}</div>
+        <div style="font-size:0.72rem;color:var(--mid);">${sub}</div>
+      </div>`;
+    row.querySelector('input').addEventListener('change', function() {
+      toggleWlVisibility(wlActiveType, it.id, this.checked);
+    });
+    container.appendChild(row);
+  });
+}
+
+async function toggleWlVisibility(type, id, makeLive) {
+  const table = type; // 'works' | 'collections' | 'exhibitions' — matches Supabase table names
+  const patch = { visibility: makeLive ? 'published' : 'draft' };
+  // Collections only carry a share_token while visibility is 'preview' —
+  // moving to published or draft via this board should clear it, same as
+  // the normal Edit Collection save flow.
+  if (table === 'collections') patch.share_token = null;
+  try {
+    const updated = await sb.safePatch(table, id, patch);
+    const arr = wlItemsFor(type);
+    const idx = arr.findIndex(x => x.id === id);
+    if (idx > -1) arr[idx] = updated[0] || { ...arr[idx], ...patch };
+    renderAll();
+    renderWlList(document.getElementById('wlSearch').value);
+    toast(makeLive ? 'Now live on the public site' : 'Taken down');
+  } catch(e) {
+    toast('Update failed: ' + e.message, true);
+    renderWlList(document.getElementById('wlSearch').value); // revert the checkbox visually
+  }
+}
+
+document.getElementById('whatsLiveBtn').addEventListener('click', openLiveStatusModal);
+document.getElementById('closeLiveStatusBtn').addEventListener('click', () => document.getElementById('liveStatusModal').classList.remove('open'));
+document.getElementById('wlSearch').addEventListener('input', function() { renderWlList(this.value); });
+document.querySelectorAll('.wlTab').forEach(btn => {
+  btn.addEventListener('click', function() {
+    wlActiveType = this.dataset.type;
+    document.querySelectorAll('.wlTab').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    document.getElementById('wlSearch').value = '';
+    renderWlList('');
+  });
+});
+
+// ══════════════════════════════════════════════════════════════
 //  EXHIBITION DETAIL
 // ══════════════════════════════════════════════════════════════
 
@@ -2202,6 +2427,17 @@ function openExhibitionDetail(id) {
   currentExhibitionId=id;
   document.getElementById('exDetailTitle').textContent=ex.name;
   document.getElementById('exDetailMeta').textContent=[ex.place,exhibitionDateLabel(ex,true)].filter(Boolean).join(' · ');
+
+  const exImgs=(ex.exhibition_images||[]).filter(im=>im&&im.url);
+  const poster=exImgs.find(im=>im.type==='poster'&&!im.is_pdf);
+  const posterEl=document.getElementById('exDetailPoster');
+  if(poster){ posterEl.src=poster.url; posterEl.alt=poster.caption||ex.name; posterEl.style.display='block'; posterEl.onclick=()=>openExLightbox(exImgs,exImgs.indexOf(poster)); }
+  else { posterEl.style.display='none'; posterEl.onclick=null; }
+
+  const aboutEl=document.getElementById('exDetailAbout');
+  if(ex.about_text&&ex.about_text.trim()){ aboutEl.textContent=ex.about_text; aboutEl.style.display='block'; }
+  else { aboutEl.style.display='none'; }
+
   const worksContainer=document.getElementById('exDetailWorks');
   worksContainer.innerHTML='';
   const exWorks=(ex.work_ids||[]).map(wid=>works.find(w=>w.id===wid)).filter(Boolean);
@@ -2211,15 +2447,85 @@ function openExhibitionDetail(id) {
     exWorks.forEach(w=>{
       const row=document.createElement('div');
       row.style.cssText='display:grid;grid-template-columns:72px 1fr;gap:0.9rem;align-items:center;padding:0.7rem;background:var(--panel);border-radius:2px;cursor:pointer;transition:background 0.12s;';
-      row.onmouseover=()=>row.style.background='#e8e3db';
+      row.onmouseover=()=>row.style.background='#e8e8e8';
       row.onmouseout=()=>row.style.background='var(--panel)';
       row.innerHTML=`<img src="${thumbFor(w,144,108)}" style="width:72px;height:54px;object-fit:cover;" alt="${w.title}"><div><div style="font-family:var(--serif);font-style:italic;font-size:1rem;margin-bottom:0.2rem;">${w.title}</div><div style="font-size:0.75rem;color:var(--mid);">${w.year||''}${w.medium?' · '+w.medium:''}${displayDimensions(w)?' · '+displayDimensions(w):''}</div>${w.notes&&isAdmin()?`<div style="font-size:0.72rem;color:var(--accent);margin-top:0.2rem;font-style:italic;">${w.notes}</div>`:''}</div>`;
       row.addEventListener('click',()=>{ document.getElementById('exhibitionDetailOverlay').classList.remove('open'); const exId=currentExhibitionId; openDetail(w.id); returnToExhibitionId=exId; });
       worksContainer.appendChild(row);
     });
   }
+
+  const co=(ex.co_exhibitors||[]).filter(c=>c&&c.name&&c.name.trim());
+  const coContainer=document.getElementById('exDetailCoExhibitors');
+  coContainer.innerHTML='';
+  if(co.length){
+    coContainer.style.display='flex';
+    const label=document.createElement('span');
+    label.textContent='Shown with';
+    label.style.cssText='font-size:0.72rem;color:var(--mid);margin-right:0.2rem;';
+    coContainer.appendChild(label);
+    co.forEach(c=>{
+      const hasUrl=c.url&&c.url.trim();
+      const chip=document.createElement(hasUrl?'a':'span');
+      chip.className='tag'+(hasUrl?' ex-chip-link':'');
+      chip.textContent=c.name;
+      if(hasUrl){ chip.href=/^https?:\/\//i.test(c.url)?c.url:'https://'+c.url; chip.target='_blank'; chip.rel='noopener'; }
+      coContainer.appendChild(chip);
+    });
+  } else { coContainer.style.display='none'; }
+
+  const filmImages=exImgs.filter(im=>im!==poster);
+  const imagesContainer=document.getElementById('exDetailImages');
+  imagesContainer.innerHTML='';
+  if(filmImages.length){
+    imagesContainer.style.display='flex';
+    filmImages.forEach(im=>{
+      if(im.is_pdf){
+        const tile=document.createElement('div');
+        tile.className='ex-pdf-tile';
+        tile.style.cssText='height:110px;width:100px;flex-shrink:0;cursor:pointer;';
+        tile.title=im.caption||im.filename||'View PDF';
+        const icon=document.createElement('span'); icon.className='ex-pdf-icon'; icon.textContent='📄';
+        const label=document.createElement('span'); label.className='ex-pdf-label'; label.textContent=im.caption||im.filename||'View PDF';
+        tile.appendChild(icon); tile.appendChild(label);
+        tile.addEventListener('click',()=>window.open(im.url,'_blank'));
+        imagesContainer.appendChild(tile);
+      } else {
+        const thumb=document.createElement('img');
+        thumb.src=im.url; thumb.alt=im.caption||'';
+        thumb.style.cssText='height:110px;flex-shrink:0;object-fit:cover;border-radius:2px;cursor:pointer;';
+        thumb.title=im.caption||(im.type?im.type.charAt(0).toUpperCase()+im.type.slice(1):'');
+        thumb.addEventListener('click',()=>openExLightbox(exImgs,exImgs.indexOf(im)));
+        imagesContainer.appendChild(thumb);
+      }
+    });
+  } else { imagesContainer.style.display='none'; }
+
   document.getElementById('exhibitionDetailOverlay').classList.add('open');
 }
+
+// ── Exhibition image lightbox — simple standalone viewer, independent of the
+// work-detail carousel/loupe machinery, since exhibition documentation shots
+// don't need those tools. ──
+let exLightboxImages=[]; let exLightboxIdx=0;
+function openExLightbox(images,idx){
+  exLightboxImages=images; exLightboxIdx=idx;
+  renderExLightbox();
+  document.getElementById('exLightbox').classList.add('open');
+}
+function renderExLightbox(){
+  const im=exLightboxImages[exLightboxIdx];
+  if(!im) return;
+  document.getElementById('exLightboxImg').src=im.url;
+  document.getElementById('exLightboxCaption').textContent=im.caption||'';
+  const multi=exLightboxImages.length>1;
+  document.getElementById('exLightboxPrev').style.display=multi?'block':'none';
+  document.getElementById('exLightboxNext').style.display=multi?'block':'none';
+}
+document.getElementById('exLightboxClose').addEventListener('click',e=>{ e.stopPropagation(); document.getElementById('exLightbox').classList.remove('open'); });
+document.getElementById('exLightbox').addEventListener('click',e=>{ if(e.target.id==='exLightbox') document.getElementById('exLightbox').classList.remove('open'); });
+document.getElementById('exLightboxPrev').addEventListener('click',e=>{ e.stopPropagation(); exLightboxIdx=(exLightboxIdx-1+exLightboxImages.length)%exLightboxImages.length; renderExLightbox(); });
+document.getElementById('exLightboxNext').addEventListener('click',e=>{ e.stopPropagation(); exLightboxIdx=(exLightboxIdx+1)%exLightboxImages.length; renderExLightbox(); });
 
 document.getElementById('exDetailClose').addEventListener('click',()=>document.getElementById('exhibitionDetailOverlay').classList.remove('open'));
 document.getElementById('exhibitionDetailOverlay').addEventListener('click',e=>{ if(e.target===document.getElementById('exhibitionDetailOverlay')) document.getElementById('exhibitionDetailOverlay').classList.remove('open'); });
@@ -2248,14 +2554,23 @@ function openExhibitionModal(id) {
     document.getElementById('eEnd').value=ex.end_date||'';
     document.getElementById('eYear').value=ex.year||'';
     document.getElementById('eVisibility').value=ex.visibility||'draft';
+    document.getElementById('eAbout').value=ex.about_text||'';
     exOriginalIds = new Set(ex.work_ids||[]);
     exSelectedIds = new Set(exOriginalIds);
+    exImages = JSON.parse(JSON.stringify(ex.exhibition_images||[]));
+    exCoExhibitors = JSON.parse(JSON.stringify(ex.co_exhibitors||[]));
   } else {
-    ['eName','ePlace','eStart','eEnd','eYear'].forEach(id=>document.getElementById(id).value='');
+    ['eName','ePlace','eStart','eEnd','eYear','eAbout'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('eVisibility').value='draft';
     exOriginalIds = new Set();
     exSelectedIds = new Set();
+    exImages = [];
+    exCoExhibitors = [];
   }
+  document.getElementById('exImagesFile').value='';
+  document.getElementById('exImagesUploadProgress').style.display='none';
+  renderExImagesPreviews();
+  renderCoExhibitorRows();
   renderExhibitionWorksChecklist('');
   document.getElementById('exhibitionModal').classList.add('open');
 }
@@ -2264,6 +2579,120 @@ function openExhibitionModal(id) {
 // the collection edit modal's works checklist (renderAtcList)
 let exOriginalIds = new Set();
 let exSelectedIds = new Set();
+
+// Exhibition images (poster/booklet/install/press) — {url,type,caption} objects,
+// distinct from work_ids. Unlike the works checklist, "primary/poster" is set via
+// the type dropdown rather than ordering, so a single array (not existing/pending
+// split like bio images) is enough.
+let exImages = [];
+const EX_IMAGE_TYPES = [['poster','Poster'],['booklet','Booklet'],['install','Install shot'],['press','Press']];
+
+function renderExImagesPreviews() {
+  const container = document.getElementById('exImagesPreviews');
+  container.innerHTML = '';
+  exImages.forEach((img, i) => {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;flex-direction:column;gap:0.3rem;width:120px;';
+    const thumbWrap = document.createElement('div');
+    thumbWrap.style.cssText = 'position:relative;';
+    if (img.is_pdf) {
+      const tile = document.createElement('div');
+      tile.className = 'ex-pdf-tile';
+      tile.style.cssText = 'width:120px;height:90px;';
+      const icon = document.createElement('span');
+      icon.className = 'ex-pdf-icon';
+      icon.textContent = '📄';
+      const label = document.createElement('span');
+      label.className = 'ex-pdf-label';
+      label.textContent = img.filename || 'PDF document';
+      tile.appendChild(icon); tile.appendChild(label);
+      thumbWrap.appendChild(tile);
+    } else {
+      const el = document.createElement('img');
+      el.className = 'upload-preview';
+      el.src = img.url;
+      el.style.cssText = 'width:120px;height:90px;object-fit:cover;display:block;';
+      thumbWrap.appendChild(el);
+    }
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.textContent = '✕';
+    removeBtn.title = 'Remove';
+    removeBtn.style.cssText = 'position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--ink);color:var(--white);border:none;cursor:pointer;font-size:0.6rem;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;';
+    removeBtn.addEventListener('click', () => { exImages.splice(i, 1); renderExImagesPreviews(); });
+    thumbWrap.appendChild(removeBtn);
+
+    const typeSelect = document.createElement('select');
+    typeSelect.style.cssText = 'font-size:0.68rem;padding:0.25rem;border:1px solid var(--light);border-radius:2px;background:var(--white);width:100%;';
+    const typeOptions = img.is_pdf ? EX_IMAGE_TYPES.filter(([val]) => val !== 'poster') : EX_IMAGE_TYPES;
+    typeOptions.forEach(([val, label]) => {
+      const opt = document.createElement('option');
+      opt.value = val; opt.textContent = label;
+      if ((img.type || (img.is_pdf ? 'booklet' : 'install')) === val) opt.selected = true;
+      typeSelect.appendChild(opt);
+    });
+    typeSelect.addEventListener('change', function() { exImages[i].type = this.value; });
+
+    const captionInput = document.createElement('input');
+    captionInput.type = 'text';
+    captionInput.placeholder = 'Caption (optional)';
+    captionInput.value = img.caption || '';
+    captionInput.style.cssText = 'font-size:0.68rem;padding:0.3rem 0.35rem;border:1px solid var(--light);border-radius:2px;width:100%;box-sizing:border-box;';
+    captionInput.addEventListener('input', function() { exImages[i].caption = this.value; });
+
+    wrap.appendChild(thumbWrap);
+    wrap.appendChild(typeSelect);
+    wrap.appendChild(captionInput);
+    container.appendChild(wrap);
+  });
+}
+
+document.getElementById('exImagesFile').addEventListener('change', async function() {
+  const files = Array.from(this.files);
+  if (!files.length) return;
+  const progress = document.getElementById('exImagesUploadProgress');
+  progress.style.display = 'block';
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    progress.textContent = `Uploading ${i + 1} of ${files.length}… 0%`;
+    try {
+      const url = await uploadToCloudinary(file, pct => { progress.textContent = `Uploading ${i + 1} of ${files.length}… ${pct}%`; });
+      const isPdf = file.type === 'application/pdf';
+      exImages.push({ url, type: isPdf ? 'booklet' : 'install', caption: '', is_pdf: isPdf, filename: isPdf ? file.name : undefined });
+      renderExImagesPreviews();
+    } catch (e) { toast('Upload failed: ' + e.message, true); }
+  }
+  progress.textContent = `✓ ${files.length} image${files.length !== 1 ? 's' : ''} uploaded`;
+  setTimeout(() => { progress.style.display = 'none'; }, 2000);
+  this.value = '';
+});
+
+// Co-exhibitors — {name,url} rows for linking out to other artists in a group show
+let exCoExhibitors = [];
+
+function renderCoExhibitorRows() {
+  const container = document.getElementById('exCoList');
+  container.innerHTML = '';
+  exCoExhibitors.forEach((co, i) => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 28px;gap:0.5rem;align-items:center;';
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text'; nameInput.placeholder = 'Artist name'; nameInput.value = co.name || '';
+    nameInput.style.cssText = 'font-size:0.82rem;padding:0.5rem 0.6rem;border:1px solid var(--light);border-radius:2px;';
+    nameInput.addEventListener('input', function() { exCoExhibitors[i].name = this.value; });
+    const urlInput = document.createElement('input');
+    urlInput.type = 'text'; urlInput.placeholder = 'Website or Instagram (optional)'; urlInput.value = co.url || '';
+    urlInput.style.cssText = 'font-size:0.82rem;padding:0.5rem 0.6rem;border:1px solid var(--light);border-radius:2px;';
+    urlInput.addEventListener('input', function() { exCoExhibitors[i].url = this.value; });
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button'; removeBtn.textContent = '✕'; removeBtn.title = 'Remove';
+    removeBtn.style.cssText = 'width:26px;height:26px;border-radius:50%;background:var(--panel);border:none;cursor:pointer;font-size:0.7rem;';
+    removeBtn.addEventListener('click', () => { exCoExhibitors.splice(i, 1); renderCoExhibitorRows(); });
+    row.appendChild(nameInput); row.appendChild(urlInput); row.appendChild(removeBtn);
+    container.appendChild(row);
+  });
+}
+document.getElementById('addCoExhibitorBtn').addEventListener('click', () => { exCoExhibitors.push({ name: '', url: '' }); renderCoExhibitorRows(); });
 
 function renderExhibitionWorksChecklist(query) {
   const container = document.getElementById('exwWorksList');
@@ -2312,7 +2741,7 @@ document.getElementById('saveExhibitionBtn').addEventListener('click', async()=>
   if(!name){alert('Please enter a name.');return;}
   const btn=document.getElementById('saveExhibitionBtn');
   btn.innerHTML='<span class="spinner"></span>Saving…'; btn.disabled=true;
-  const data={name,place:document.getElementById('ePlace').value.trim(),start_date:document.getElementById('eStart').value||null,end_date:document.getElementById('eEnd').value||null,year:parseInt(document.getElementById('eYear').value)||null,visibility:document.getElementById('eVisibility').value,work_ids:[...exSelectedIds]};
+  const data={name,place:document.getElementById('ePlace').value.trim(),start_date:document.getElementById('eStart').value||null,end_date:document.getElementById('eEnd').value||null,year:parseInt(document.getElementById('eYear').value)||null,visibility:document.getElementById('eVisibility').value,work_ids:[...exSelectedIds],about_text:document.getElementById('eAbout').value.trim(),exhibition_images:exImages.filter(im=>im.url),co_exhibitors:exCoExhibitors.filter(c=>c.name&&c.name.trim())};
   try {
     if(editingExhibitionId){ const updated=await sb.safePatch('exhibitions',editingExhibitionId,data); const idx=exhibitions.findIndex(e=>e.id===editingExhibitionId); exhibitions[idx]=updated[0]||{...exhibitions[idx],...data}; }
     else { const created=await sb.safePost('exhibitions',data); exhibitions.push(created[0]||{id:uid(),...data}); }
@@ -2433,6 +2862,7 @@ document.getElementById('editBioBtn').addEventListener('click', () => {
   document.getElementById('editBioText').value = bio.text;
   document.getElementById('editBioStatement').value = bio.statement;
   document.getElementById('editBioCv').value = bio.cv_text || '';
+  document.getElementById('bioVisibility').value = bio.visibility || 'preview';
   bioExistingImageUrls = [...(bio.image_urls || [])].filter(Boolean);
   bioPendingImageUrls = [];
   document.getElementById('bioFile').value = '';
@@ -2464,14 +2894,16 @@ document.getElementById('saveBioBtn').addEventListener('click', async () => {
   bio.text = document.getElementById('editBioText').value;
   bio.statement = document.getElementById('editBioStatement').value;
   bio.cv_text = document.getElementById('editBioCv').value;
+  bio.visibility = document.getElementById('bioVisibility').value;
   bio.image_urls = [...bioExistingImageUrls, ...bioPendingImageUrls];
   document.getElementById('bioText').innerHTML = linkifyEmails(bio.text);
   document.getElementById('bioStatement').innerHTML = linkifyEmails(bio.statement);
   renderBioImages();
   renderCv();
+  applyBioVisibility();
   try {
-    if (bio.id) await sb.safePatch('bio', bio.id, { text: bio.text, statement: bio.statement, cv_text: bio.cv_text, image_urls: bio.image_urls });
-    else { const r = await sb.safePost('bio', { text: bio.text, statement: bio.statement, cv_text: bio.cv_text, image_urls: bio.image_urls }); bio = r[0]; }
+    if (bio.id) await sb.safePatch('bio', bio.id, { text: bio.text, statement: bio.statement, cv_text: bio.cv_text, image_urls: bio.image_urls, visibility: bio.visibility });
+    else { const r = await sb.safePost('bio', { text: bio.text, statement: bio.statement, cv_text: bio.cv_text, image_urls: bio.image_urls, visibility: bio.visibility }); bio = r[0]; }
     bioExistingImageUrls = [];
     bioPendingImageUrls = [];
     document.getElementById('bioModal').classList.remove('open');
@@ -2510,7 +2942,7 @@ function printContactSheet(id) {
     return `<div class="print-work-item"><div class="print-work-thumb-cell"><img class="print-work-thumb" src="${cloudinaryPrintUrl(thumbFor(w))}" alt="${w.title}"></div><div class="print-work-info"><div class="print-work-title">${i+1}. ${w.title}</div><div class="print-work-meta">${w.year?`<strong>${w.year}</strong>`:''} ${w.medium?`<br>${w.medium}`:''} ${displayDimensions(w)?`<br>${displayDimensions(w)}`:''} ${colNames.length?`<br><em>${colNames.join(', ')}</em>`:''}</div></div></div>`;
   }).join('');
   const sheet=document.getElementById('printContactSheet');
-  sheet.innerHTML=`<div class="print-header"><div style="font-size:7.5pt;letter-spacing:0.15em;text-transform:uppercase;color:#6b6660;margin-bottom:6pt;">Cerlin Karunaratne — Exhibition Contact Sheet</div><h1>${ex.name}</h1><div class="print-meta">${[ex.place,dateStr].filter(Boolean).join(' · ')}${exWorks.length?' · '+exWorks.length+' work'+(exWorks.length!==1?'s':''):''}</div></div><div class="print-works-grid">${worksHtml}</div>`;
+  sheet.innerHTML=`<div class="print-header"><div style="font-size:7.5pt;letter-spacing:0.15em;text-transform:uppercase;color:var(--mid);margin-bottom:6pt;">Cerlin Karunaratne — Exhibition Contact Sheet</div><h1>${ex.name}</h1><div class="print-meta">${[ex.place,dateStr].filter(Boolean).join(' · ')}${exWorks.length?' · '+exWorks.length+' work'+(exWorks.length!==1?'s':''):''}</div></div><div class="print-works-grid">${worksHtml}</div>`;
   sheet.style.display='block';
   waitForImagesThenPrint(sheet);
 }
@@ -2523,7 +2955,7 @@ function printContactSheetForCollection(id) {
     return `<div class="print-work-item"><div class="print-work-thumb-cell"><img class="print-work-thumb" src="${cloudinaryPrintUrl(thumbFor(w))}" alt="${w.title}"></div><div class="print-work-info"><div class="print-work-title">${i+1}. ${w.title}</div><div class="print-work-meta">${w.year?`<strong>${w.year}</strong>`:''} ${w.medium?`<br>${w.medium}`:''} ${displayDimensions(w)?`<br>${displayDimensions(w)}`:''}</div></div></div>`;
   }).join('');
   const sheet=document.getElementById('printContactSheet');
-  sheet.innerHTML=`<div class="print-header"><div style="font-size:7.5pt;letter-spacing:0.15em;text-transform:uppercase;color:#6b6660;margin-bottom:6pt;">Cerlin Karunaratne — Collection Contact Sheet</div><h1>${c.name}</h1><div class="print-meta">${[c.description,cWorks.length?cWorks.length+' work'+(cWorks.length!==1?'s':''):''].filter(Boolean).join(' · ')}</div></div><div class="print-works-grid">${worksHtml}</div>`;
+  sheet.innerHTML=`<div class="print-header"><div style="font-size:7.5pt;letter-spacing:0.15em;text-transform:uppercase;color:var(--mid);margin-bottom:6pt;">Cerlin Karunaratne — Collection Contact Sheet</div><h1>${c.name}</h1><div class="print-meta">${[c.description,cWorks.length?cWorks.length+' work'+(cWorks.length!==1?'s':''):''].filter(Boolean).join(' · ')}</div></div><div class="print-works-grid">${worksHtml}</div>`;
   sheet.style.display='block';
   waitForImagesThenPrint(sheet);
 }
@@ -2546,6 +2978,7 @@ window.switchView=function(name, resetFilter=false){
 };
 
 document.querySelectorAll('header .tab-btn').forEach(b=>{ b.onclick=()=>window.switchView(b.dataset.view, b.dataset.view==='works'); });
+document.getElementById('siteLogo').addEventListener('click', () => window.switchView('works', true));
 document.querySelectorAll('#mobileNav .tab-btn').forEach(b=>{ b.onclick=()=>window.switchView(b.dataset.view, b.dataset.view==='works'); });
 
 // ══════════════════════════════════════════════════════════════
@@ -2559,12 +2992,27 @@ showMobileNav(); window.addEventListener('resize',showMobileNav);
 //  RENDER ALL
 // ══════════════════════════════════════════════════════════════
 
+function applyBioVisibility() {
+  const show = isAdmin() || bio.visibility === 'published';
+  document.querySelectorAll('[data-view="bio"]').forEach(el => { el.style.display = show ? '' : 'none'; });
+  const badge = document.getElementById('bioVisibilityBadge');
+  if (isAdmin() && bio.visibility && bio.visibility !== 'published') {
+    badge.textContent = bio.visibility;
+    badge.className = `visibility-badge admin-only badge-${bio.visibility}`;
+    badge.style.display = '';
+  } else if (badge) {
+    badge.style.display = 'none';
+  }
+  if (!show && document.getElementById('view-bio')?.classList.contains('active')) window.switchView('works', true);
+}
+
 function renderAll() {
   renderWorksGrid(); renderCollections(); renderExhibitions();
   document.getElementById('bioText').innerHTML=linkifyEmails(bio.text||'');
   document.getElementById('bioStatement').innerHTML=linkifyEmails(bio.statement||'');
   renderBioImages();
   renderCv();
+  applyBioVisibility();
 }
 
 // ── INIT ──
